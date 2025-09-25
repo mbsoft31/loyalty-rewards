@@ -1,0 +1,44 @@
+{
+    "name": "mbsoft31/loyalty-rewards",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Mbsoft31\\LoyaltyRewards\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "mbsoft31",
+            "email": "bekhouche.mouadh@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "psr/log": "^3.0",
+        "psr/event-dispatcher": "^1.0",
+        "ramsey/uuid": "^4.9"
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.0",
+        "phpstan/phpstan": "^1.10",
+        "friendsofphp/php-cs-fixer": "^3.40"
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test:coverage": "vendor/bin/pest --coverage",
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/php-cs-fixer fix",
+        "format:check": "vendor/bin/php-cs-fixer fix --dry-run --diff"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
