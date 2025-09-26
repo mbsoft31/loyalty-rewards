@@ -4,7 +4,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "LoyaltyRewards\\": "src/"
+            "LoyaltyRewards\\": "src/",
+            "LoyaltyRewards\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -17,7 +18,8 @@
         "php": "^8.2",
         "psr/log": "^3.0",
         "psr/event-dispatcher": "^1.0",
-        "ramsey/uuid": "^4.9"
+        "ramsey/uuid": "^4.9",
+        "ext-pdo": "*"
     },
     "require-dev": {
         "pestphp/pest": "^2.0",
