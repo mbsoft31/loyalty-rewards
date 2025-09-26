@@ -7,7 +7,7 @@ namespace LoyaltyRewards\Domain\ValueObjects;
 use InvalidArgumentException;
 use JsonSerializable;
 
-final readonly class Currency implements JsonSerializable
+final class Currency implements JsonSerializable
 {
     private const SUPPORTED_CURRENCIES = [
         'USD' => ['symbol' => '$', 'name' => 'US Dollar', 'decimals' => 2],
@@ -17,6 +17,7 @@ final readonly class Currency implements JsonSerializable
         'AUD' => ['symbol' => 'A$', 'name' => 'Australian Dollar', 'decimals' => 2],
         'JPY' => ['symbol' => '¥', 'name' => 'Japanese Yen', 'decimals' => 0],
         'NGN' => ['symbol' => '₦', 'name' => 'Nigerian Naira', 'decimals' => 2],
+        'DZD' => ['symbol' => 'دج', 'name' => 'Algerian Dinar', 'decimals' => 2],
     ];
 
     public function __construct(private string $code)

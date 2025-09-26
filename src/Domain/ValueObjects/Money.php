@@ -10,7 +10,7 @@ use JsonSerializable;
 final readonly class Money implements JsonSerializable
 {
     public function __construct(
-        private int $amount, // Amount in smallest currency unit (cents)
+        private int $amount, // Amount in the smallest currency unit (cents)
         private Currency $currency
     ) {
         if ($amount < 0) {

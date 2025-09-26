@@ -4,7 +4,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Mbsoft31\\LoyaltyRewards\\": "src/"
+            "LoyaltyRewards\\": "src/"
         }
     },
     "authors": [
@@ -14,7 +14,7 @@
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "psr/log": "^3.0",
         "psr/event-dispatcher": "^1.0",
         "ramsey/uuid": "^4.9"
