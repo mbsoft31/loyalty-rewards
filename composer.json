@@ -15,7 +15,8 @@
         "pestphp/pest": "^2.0",
         "mockery/mockery": "^1.6",
         "phpunit/phpunit": "^10.0",
-        "symfony/var-dumper": "^6.0"
+        "symfony/var-dumper": "^6.0",
+        "ext-pdo": "*"
     },
     "autoload": {
         "psr-4": {

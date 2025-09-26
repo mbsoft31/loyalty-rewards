@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use LoyaltyRewards\Tests\Support\LoyaltyTestCase;
 use LoyaltyRewards\Tests\Support\DatabaseTestCase;
+use LoyaltyRewards\Tests\Support\PerformanceTestCase;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,7 @@ use LoyaltyRewards\Tests\Support\DatabaseTestCase;
 
 uses(LoyaltyTestCase::class)->in('Unit', 'Feature');
 uses(DatabaseTestCase::class)->in('Integration/Database');
+uses(PerformanceTestCase::class)->in('Integration/Performance');
 
 /*
 |--------------------------------------------------------------------------
