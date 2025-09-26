@@ -11,9 +11,9 @@ use LoyaltyRewards\Domain\Enums\TransactionType;
 use DateTimeImmutable;
 use PDO;
 
-class DatabaseTransactionRepository implements TransactionRepositoryInterface
+readonly class DatabaseTransactionRepository implements TransactionRepositoryInterface
 {
-    public function __construct(private readonly PDO $pdo) {}
+    public function __construct(private PDO $pdo) {}
 
     public function findById(TransactionId $id): ?PointsTransaction
     {
