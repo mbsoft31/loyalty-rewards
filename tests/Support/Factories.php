@@ -10,7 +10,6 @@ use LoyaltyRewards\Domain\ValueObjects\{
     TransactionContext, ConversionRate
 };
 use LoyaltyRewards\Domain\Enums\{TransactionType, AccountStatus};
-use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, TierBonusRule, TimeBasedRule};
 use DateTimeImmutable;
 
 class Factories
@@ -22,7 +21,7 @@ class Factories
 
     public static function money(float $dollars = 100.0, string $currency = 'USD'): Money
     {
-        return Money::fromDollars($dollars, Currency::USD());
+        return Money::fromDollars($dollars, new Currency($currency));
     }
 
     public static function currency(string $code = 'USD'): Currency
@@ -78,41 +77,6 @@ class Factories
             $type,
             $points ?? self::points(),
             $context ?? self::transactionContext()
-        );
-    }
-
-    public static function categoryMultiplierRule(
-        string $category = 'electronics',
-        float $multiplier = 2.0
-    ): CategoryMultiplierRule {
-        return new CategoryMultiplierRule(
-            $category,
-            $multiplier,
-            ConversionRate::standard()
-        );
-    }
-
-    public static function tierBonusRule(
-        string $tier = 'gold',
-        float $bonusMultiplier = 1.5
-    ): TierBonusRule {
-        return new TierBonusRule(
-            $tier,
-            $bonusMultiplier,
-            ConversionRate::standard()
-        );
-    }
-
-    public static function timeBasedRule(
-        DateTimeImmutable $start = null,
-        DateTimeImmutable $end = null,
-        float $multiplier = 2.0
-    ): TimeBasedRule {
-        return new TimeBasedRule(
-            $start ?? new DateTimeImmutable('-1 day'),
-            $end ?? new DateTimeImmutable('+1 day'),
-            $multiplier,
-            ConversionRate::standard()
         );
     }
 }

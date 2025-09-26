@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LoyaltyRewards\Core\Exceptions;
 
-class AccountNotFoundException
+final class AccountNotFoundException extends LoyaltyException
 {
-
 }
