@@ -150,4 +150,10 @@ final readonly class Money implements JsonSerializable
     {
         return $this->currency->format($this->toDollars());
     }
+
+    public function isGreaterThanOrEqual(Money $minimumAmount): bool
+    {
+        $this->assertSameCurrency($minimumAmount);
+        return $this->amount >= $minimumAmount->amount;
+    }
 }
