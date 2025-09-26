@@ -29,7 +29,11 @@
     },
     "scripts": {
         "test": "pest",
-        "test-coverage": "pest --coverage"
+        "test:unit": "pest tests/Unit",
+        "test:feature": "pest tests/Feature", 
+        "test:verbose": "pest --verbose",
+        "test:coverage": "pest --coverage-html coverage",
+        "test:filter": "pest --filter"
     },
     "config": {
         "optimize-autoloader": true,
