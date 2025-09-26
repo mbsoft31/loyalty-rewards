@@ -26,6 +26,10 @@ class LoyaltyService
         private readonly LoggerInterface $logger = new NullLogger()
     ) {}
 
+    /**
+     * @throws AccountNotFoundException
+     * @throws FraudDetectedException
+     */
     public function earnPoints(
         CustomerId $customerId,
         Money $amount,
@@ -89,10 +93,13 @@ class LoyaltyService
         return $result;
     }
 
+    /**
+     * @throws AccountNotFoundException
+     */
     public function redeemPoints(
         CustomerId $customerId,
         Points $pointsToRedeem,
-        TransactionContext $context = null
+        ?TransactionContext $context = null
     ): RedemptionResult {
         $this->logger->info('Processing points redemption', [
             'customer_id' => $customerId->toString(),
@@ -174,13 +181,19 @@ class LoyaltyService
         return $account;
     }
 
+    /**
+     * @throws AccountNotFoundException
+     */
     public function getAccountBalance(CustomerId $customerId): Points
     {
         $account = $this->getAccount($customerId);
         return $account->getAvailablePoints();
     }
 
-    public function confirmPendingPoints(CustomerId $customerId, Points $pointsToConfirm = null): void
+    /**
+     * @throws AccountNotFoundException
+     */
+    public function confirmPendingPoints(CustomerId $customerId, ?Points $pointsToConfirm = null): void
     {
         $account = $this->getAccount($customerId);
         $account->confirmPendingPoints($pointsToConfirm);
@@ -190,6 +203,9 @@ class LoyaltyService
         $this->dispatchAccountEvents($account);
     }
 
+    /**
+     * @throws AccountNotFoundException
+     */
     private function getAccount(CustomerId $customerId): LoyaltyAccount
     {
         try {

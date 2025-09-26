@@ -30,8 +30,8 @@ final class TransactionContext implements JsonSerializable
     }
 
     public static function earning(
-        string $category = null,
-        string $source = null,
+        ?string $category = null,
+        ?string $source = null,
         array $additionalData = []
     ): self {
         $data = [];
@@ -46,6 +46,7 @@ final class TransactionContext implements JsonSerializable
 
         return new self([...$data, ...$additionalData]);
     }
+
 
     public function get(string $key, mixed $default = null): mixed
     {

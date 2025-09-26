@@ -68,7 +68,7 @@ class LoyaltyAccount implements JsonSerializable
         return $transaction;
     }
 
-    public function confirmPendingPoints(Points $pointsToConfirm = null): void
+    public function confirmPendingPoints(?Points $pointsToConfirm = null): void
     {
         $pointsToConfirm = $pointsToConfirm ?? $this->pendingPoints;
 
@@ -107,6 +107,9 @@ class LoyaltyAccount implements JsonSerializable
         return $transaction;
     }
 
+    /**
+     * @throws InactiveAccountException
+     */
     public function adjustPoints(Points $adjustment, string $reason): PointsTransaction
     {
         $this->guardAgainstInactiveAccount();
@@ -142,6 +145,9 @@ class LoyaltyAccount implements JsonSerializable
         return $transaction;
     }
 
+    /**
+     * @throws InactiveAccountException
+     */
     public function expirePoints(Points $pointsToExpire): PointsTransaction
     {
         $this->guardAgainstInactiveAccount();

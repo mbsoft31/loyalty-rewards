@@ -43,11 +43,10 @@ describe('LoyaltyService Integration', function () {
         );
         $this->rulesEngine->addEarningRule($rule);
 
-        // Mock fraud detection (no fraud)
-        $fraudResult = mock(stdClass::class);
-        $fraudResult->shouldReceive('shouldBlock')->andReturn(false);
-        $fraudResult->shouldReceive('isSuspicious')->andReturn(false);
-        $this->fraudDetection->shouldReceive('analyze')->andReturn($fraudResult);
+        // Create a real FraudResult instead of mocking
+        $fraudResult = new \LoyaltyRewards\Core\Services\FraudDetection\FraudResult(0.1, []);
+        $this->fraudDetection->shouldReceive('analyze')
+            ->andReturn($fraudResult);
 
         // Mock repository
         $this->accountRepository->shouldReceive('findByCustomerId')
@@ -67,8 +66,9 @@ describe('LoyaltyService Integration', function () {
         $result = $this->loyaltyService->earnPoints($customerId, $amount, $context);
 
         // Assert
-        expect($result)->toBeSuccessfulEarning();
-        expect($result->pointsEarned)->toBePoints(20000); // $100 * 100 * 2.0
+        expect($result)->toBeSuccessfulEarning()
+            ->and($result->pointsEarned)->toBePoints(20000);// $100 * 100 * 2.0
+
     });
 
     it('processes redemption successfully', function () {
@@ -79,6 +79,10 @@ describe('LoyaltyService Integration', function () {
             availablePoints: Factories::points(1000)
         );
         $pointsToRedeem = Factories::points(500);
+
+        // Add redemption rule to the engine
+        $redemptionRule = new \LoyaltyRewards\Rules\Redemption\BasicRedemptionRule(Currency::USD(), 100, 100);
+        $this->rulesEngine->addRedemptionRule($redemptionRule);
 
         // Mock repository
         $this->accountRepository->shouldReceive('findByCustomerId')
@@ -100,7 +104,9 @@ describe('LoyaltyService Integration', function () {
         // Assert
         expect($result)->toBeSuccessfulRedemption();
         expect($result->newAvailableBalance)->toBePoints(500);
+        expect($result->redemptionValue)->not->toBeNull();
     });
+
 
     it('creates new account successfully', function () {
         $customerId = Factories::customerId();

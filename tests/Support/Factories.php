@@ -29,7 +29,7 @@ class Factories
         return new Currency($code);
     }
 
-    public static function customerId(string $id = null): CustomerId
+    public static function customerId(?string $id = null): CustomerId
     {
         return CustomerId::fromString($id ?? 'customer_' . uniqid());
     }
@@ -50,9 +50,9 @@ class Factories
     }
 
     public static function loyaltyAccount(
-        CustomerId $customerId = null,
-        Points $availablePoints = null,
-        Points $pendingPoints = null,
+        ?CustomerId $customerId = null,
+        ?Points $availablePoints = null,
+        ?Points $pendingPoints = null,
         AccountStatus $status = AccountStatus::ACTIVE
     ): LoyaltyAccount {
         return new LoyaltyAccount(
@@ -67,10 +67,10 @@ class Factories
     }
 
     public static function pointsTransaction(
-        AccountId $accountId = null,
+        ?AccountId $accountId = null,
         TransactionType $type = TransactionType::EARN,
-        Points $points = null,
-        TransactionContext $context = null
+        ?Points $points = null,
+        ?TransactionContext $context = null
     ): PointsTransaction {
         return PointsTransaction::create(
             $accountId ?? self::accountId(),
