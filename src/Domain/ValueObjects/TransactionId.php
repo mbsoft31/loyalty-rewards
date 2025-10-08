@@ -9,7 +9,7 @@ use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-final class TransactionId implements JsonSerializable
+final readonly class TransactionId implements JsonSerializable
 {
     public function __construct(private UuidInterface $value)
     {

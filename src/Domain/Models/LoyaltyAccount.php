@@ -7,7 +7,7 @@ namespace LoyaltyRewards\Domain\Models;
 use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 use LoyaltyRewards\Domain\ValueObjects\{Points, AccountId, TransactionContext};
 use LoyaltyRewards\Domain\Enums\{TransactionType, AccountStatus};
-use LoyaltyRewards\Domain\Events\{PointsEarnedEvent, PointsRedeemedEvent, AccountCreatedEvent, TierUpgradedEvent};
+use LoyaltyRewards\Domain\Events\{PointsEarnedEvent, PointsRedeemedEvent, AccountCreatedEvent};
 use LoyaltyRewards\Core\Exceptions\{InsufficientPointsException, InactiveAccountException};
 use DateTimeImmutable;
 use JsonSerializable;
@@ -81,7 +81,7 @@ class LoyaltyAccount implements JsonSerializable
         $this->pendingPoints = $this->pendingPoints->subtract($pointsToConfirm);
     }
 
-    public function redeemPoints(Points $pointsToRedeem, TransactionContext $context = null): PointsTransaction
+    public function redeemPoints(Points $pointsToRedeem, ?TransactionContext $context = null): PointsTransaction
     {
         $this->guardAgainstInactiveAccount();
         $this->guardAgainstInsufficientPoints($pointsToRedeem);

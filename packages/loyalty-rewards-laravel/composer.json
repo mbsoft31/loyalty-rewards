@@ -1,0 +1,25 @@
+{
+  "name": "mbsoft31/loyalty-rewards-laravel",
+  "description": "Laravel adapter for the Loyalty Rewards library (service provider, config, bindings)",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "illuminate/support": "^10.0 || ^11.0",
+    "psr/log": "^3.0",
+    "mbsoft31/loyalty-rewards": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "LoyaltyRewards\\Laravel\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "LoyaltyRewards\\Laravel\\Providers\\LoyaltyRewardsServiceProvider"
+      ]
+    }
+  }
+}
+

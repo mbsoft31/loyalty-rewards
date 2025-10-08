@@ -1,9 +1,10 @@
 # 🎯 Loyalty Rewards System
 
 [![Tests](https://github.com/mbsoft31/loyalty-rewards/actions/workflows/tests.yml/badge.svg)](https://github.com/mbsoft31/loyalty-rewards/actions/workflows/tests.yml)
-[![PHP Version](https://img.shields.io/badge/php-%5E8.1-blue)](https://php.net)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue)](https://php.net)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Latest Version](https://img.shields.io/github/v/release/mbsoft31/loyalty-rewards)](https://github.com/mbsoft31/loyalty-rewards/releases)
+[![Laravel Adapter](https://img.shields.io/badge/Laravel-Adapter-blueviolet)](packages/loyalty-rewards-laravel)
 
 A comprehensive, enterprise-grade loyalty rewards system for PHP applications. Built with Domain-Driven Design principles, this package provides flexible point earning/redemption, fraud detection, audit logging, and multi-tier reward programs.
 
@@ -15,7 +16,7 @@ A comprehensive, enterprise-grade loyalty rewards system for PHP applications. B
 - ⚡ High Performance — Handles 1000+ transactions/second with optimized database queries
 - 🧪 100% Test Coverage — Comprehensive test suite with unit, integration, and performance tests
 - 🔧 Framework Agnostic — Works with Laravel, Symfony, or standalone PHP applications
-- 💎 Type Safe — Full PHP 8.1+ type declarations with strict type checking
+- 💎 Type Safe — Full PHP 8.2+ type declarations with strict type checking
 
 ## 🚀 Quick Start
 
@@ -78,7 +79,6 @@ loyalty-rewards/
 │   │   └── Repositories/     # Data access contracts
 │   ├── Infrastructure/       # External concerns
 │   │   ├── Database/         # Database implementations
-│   │   ├── Cache/            # Caching layer
 │   │   └── Audit/            # Audit logging
 │   ├── Application/          # Use cases and DTOs
 │   └── Rules/                # Business rules library
@@ -296,6 +296,7 @@ Scalability Features:
 - [Architecture Guide (ARCHITECTURE.md)](ARCHITECTURE.md) — Technical design decisions
 - [Examples (EXAMPLES.md)](EXAMPLES.md) — 10+ real-world implementations
 - [Configuration (CONFIGURATION.md)](CONFIGURATION.md) — Setup and customization options
+- [Laravel Adapter](packages/loyalty-rewards-laravel) — Service provider, config, and migrations
 
 ## 🤝 Contributing
 

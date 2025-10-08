@@ -112,9 +112,9 @@ describe('LoyaltyService Integration', function () {
         $customerId = Factories::customerId();
 
         // Mock repository - account doesn't exist, then save new one
-        $this->accountRepository->shouldReceive('findByCustomerId')
+        $this->accountRepository->shouldReceive('exists')
             ->with($customerId)
-            ->andThrow(new \LoyaltyRewards\Core\Exceptions\AccountNotFoundException());
+            ->andReturn(false);
         $this->accountRepository->shouldReceive('save')->once();
 
         // Mock audit service

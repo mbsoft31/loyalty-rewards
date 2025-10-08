@@ -160,7 +160,8 @@ class LoyaltyAccount
 
 ## Performance Architecture
 
-### Caching Strategy
+### Caching Strategy (Planned)
+Note: A caching layer is planned but not implemented in `src/` yet. The strategy below outlines future work:
 - L1 Cache: In-memory application cache for frequently accessed data
 - L2 Cache: Redis/Memcached for distributed caching
 - Query Result Caching: Database query optimization

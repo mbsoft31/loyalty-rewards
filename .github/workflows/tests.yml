@@ -32,4 +32,9 @@ jobs:
 
       - name: Run tests with coverage
         if: matrix.php-version == '8.2'
-        run: composer test:coverage
+        run: composer test:clover
+
+      - name: Enforce coverage >= 80%
+        if: matrix.php-version == '8.2'
+        run: |
+          php -r '$x=simplexml_load_file("coverage.xml"); $m=$x->project->metrics; $covered=(int)$m["coveredstatements"]; $total=max(1,(int)$m["statements"]); $pct=($covered/$total)*100; echo "Coverage: ".round($pct,2)."%\n"; if($pct<80){fwrite(STDERR, "Coverage ".round($pct,2)."% below threshold (80%)\n"); exit(1);} else { echo "OK: coverage threshold met.\n"; }'

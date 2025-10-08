@@ -95,10 +95,8 @@ final class Currency implements JsonSerializable
         }
 
         return match ($this->code) {
-            'USD', 'CAD', 'AUD' => $this->symbol() . $formatted,
-            'EUR', 'GBP' => $this->symbol() . $formatted,
-            'JPY' => $this->symbol() . $formatted,
-            'NGN' => $this->symbol() . $formatted,
+            'USD', 'CAD', 'AUD', 'JPY', 'EUR', 'GBP', 'NGN' => $this->symbol() . $formatted,
+            'DZD' => $formatted . ' ' . $this->symbol(),
             default => $formatted . ' ' . $this->code,
         };
     }

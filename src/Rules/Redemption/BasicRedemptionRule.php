@@ -7,12 +7,12 @@ namespace LoyaltyRewards\Rules\Redemption;
 use LoyaltyRewards\Rules\Contracts\RedemptionRuleInterface;
 use LoyaltyRewards\Domain\ValueObjects\{Points, Money, Currency, TransactionContext};
 
-class BasicRedemptionRule implements RedemptionRuleInterface
+readonly class BasicRedemptionRule implements RedemptionRuleInterface
 {
     public function __construct(
-        private readonly Currency $currency,
-        private readonly int $pointsPerDollar = 100, // 100 points = $1
-        private readonly int $minimumPoints = 100
+        private Currency $currency,
+        private int      $pointsPerDollar = 100, // 100 points = $1
+        private int      $minimumPoints = 100
     ) {}
 
     public function calculateRedemptionValue(Points $points, TransactionContext $context): Money

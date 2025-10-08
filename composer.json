@@ -34,6 +34,8 @@
         "test:feature": "pest tests/Feature", 
         "test:verbose": "pest --verbose",
         "test:coverage": "pest --coverage-html coverage",
+        "test:clover": "pest --coverage-clover coverage.xml",
+        "test:integration": "pest tests/Integration",
         "test:filter": "pest --filter"
     },
     "config": {

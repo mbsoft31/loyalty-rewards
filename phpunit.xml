@@ -24,9 +24,6 @@
         <include>
             <directory suffix=".php">src</directory>
         </include>
-        <exclude>
-            <directory>src/Infrastructure/Database/migrations</directory>
-        </exclude>
     </source>
     <php>
         <env name="DB_CONNECTION" value="sqlite"/>

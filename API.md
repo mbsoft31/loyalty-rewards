@@ -2,6 +2,41 @@
 
 Complete API documentation for the Loyalty Rewards System.
 
+## Getting Started (Minimal Wiring)
+```php
+use LoyaltyRewards\\Core\\Services\\{LoyaltyService, FraudDetectionService, AuditService};
+use LoyaltyRewards\\Core\\Engine\\RulesEngine;
+use LoyaltyRewards\\Infrastructure\\Database\\{DatabaseConnectionFactory, DatabaseAccountRepository, DatabaseTransactionRepository, DatabaseAuditRepository};
+use LoyaltyRewards\\Rules\\Earning\\CategoryMultiplierRule;
+use LoyaltyRewards\\Rules\\Redemption\\BasicRedemptionRule;
+use LoyaltyRewards\\Domain\\ValueObjects\\{CustomerId, Money, Currency, TransactionContext, ConversionRate, Points};
+use Psr\\EventDispatcher\\EventDispatcherInterface;
+use Psr\\Log\\NullLogger;
+
+$pdo = DatabaseConnectionFactory::create(['driver' => 'sqlite', 'database' => ':memory:']);
+$pdo->exec('CREATE TABLE loyalty_accounts (id TEXT PRIMARY KEY, customer_id TEXT UNIQUE, available_points INT, pending_points INT, lifetime_points INT, status TEXT, created_at TEXT, updated_at TEXT, last_activity_at TEXT)');
+$pdo->exec('CREATE TABLE points_transactions (id TEXT PRIMARY KEY, account_id TEXT, type TEXT, points INT, context_data TEXT, created_at TEXT, processed_at TEXT)');
+$pdo->exec('CREATE TABLE audit_logs (id TEXT PRIMARY KEY, entity_type TEXT, entity_id TEXT, action TEXT, user_id TEXT, data TEXT, ip_address TEXT, user_agent TEXT, created_at TEXT)');
+
+$tx = new DatabaseTransactionRepository($pdo);
+$accounts = new DatabaseAccountRepository($pdo, $tx);
+$auditRepo = new DatabaseAuditRepository($pdo);
+$rules = new RulesEngine(new NullLogger());
+$rules->addEarningRule(new CategoryMultiplierRule('electronics', 2.0, ConversionRate::standard()));
+$rules->addRedemptionRule(new BasicRedemptionRule(Currency::USD(), 100, 200));
+$fraud = new FraudDetectionService(new NullLogger());
+$audit = new AuditService($auditRepo, new NullLogger());
+$events = new class implements EventDispatcherInterface { public function dispatch(object $e): object { return $e; } };
+$loyalty = new LoyaltyService($accounts, $rules, $fraud, $audit, $events, new NullLogger());
+
+$customer = CustomerId::fromString('customer_1');
+$loyalty->createAccount($customer);
+$earned = $loyalty->earnPoints($customer, Money::fromDollars(120, Currency::USD()), TransactionContext::earning('electronics'));
+$loyalty->confirmPendingPoints($customer);
+$redeemed = $loyalty->redeemPoints($customer, Points::fromInt(500));
+```
+More examples: see `EXAMPLES.md`.
+
 ## Core Services
 
 ### LoyaltyService
@@ -9,16 +44,16 @@ Complete API documentation for the Loyalty Rewards System.
 The primary service for all loyalty operations.
 
 #### Constructor
-
+```php
 public function __construct(
-AccountRepositoryInterface $accountRepository,
-RulesEngine $rulesEngine,
-FraudDetectionService $fraudDetection,
-AuditService $auditService,
-EventDispatcherInterface $eventDispatcher,
-LoggerInterface $logger = new NullLogger()
+    AccountRepositoryInterface $accountRepository,
+    RulesEngine $rulesEngine,
+    FraudDetectionService $fraudDetection,
+    AuditService $auditService,
+    EventDispatcherInterface $eventDispatcher,
+    LoggerInterface $logger = new NullLogger()
 )
-
+```
 #### Methods
 
 ##### createAccount(CustomerId $customerId): LoyaltyAccount
@@ -34,9 +69,10 @@ Throws:
 - InvalidArgumentException - If account already exists
 
 Example:
-
+```php
 $customerId = CustomerId::fromString('customer_12345');
 $account = $loyaltyService->createAccount($customerId);
+```
 
 ##### earnPoints(CustomerId $customerId, Money $amount, TransactionContext $context): EarningResult
 
@@ -55,19 +91,19 @@ Throws:
 - InactiveAccountException - If account is suspended/closed
 
 Example:
-
+```php
 $result = $loyaltyService->earnPoints(
-CustomerId::fromString('customer_12345'),
-Money::fromDollars(50.00, Currency::USD()),
-TransactionContext::earning('electronics', 'online_store', [
-'product_id' => 'laptop_001',
-'payment_method' => 'credit_card'
-])
+    CustomerId::fromString('customer_12345'),
+    Money::fromDollars(50.00, Currency::USD()),
+    TransactionContext::earning('electronics', 'online_store', [
+        'product_id' => 'laptop_001',
+        'payment_method' => 'credit_card'
+    ])
 );
 
 echo "Points earned: {$result->pointsEarned->value()}";
 echo "New balance: {$result->newAvailableBalance->value()}";
-
+```
 ##### redeemPoints(CustomerId $customerId, Points $pointsToRedeem, ?TransactionContext $context = null): RedemptionResult
 
 Process points redemption for a customer.
@@ -218,12 +254,7 @@ public DateTimeImmutable $occurredAt;
 }
 
 #### Event Handling
-
-// Register event listeners
-$eventDispatcher->addListener(PointsEarnedEvent::class, function (PointsEarnedEvent $event) {
-// Send notification to customer
-$notificationService->sendPointsEarnedNotification($event);
-});
+Listeners are registered via your framework or container; PSR‑14 dispatchers typically do not attach listeners at runtime. Bind listeners during application bootstrap; LoyaltyService will dispatch domain events and your listeners will react.
 
 ## Repository Interfaces
 

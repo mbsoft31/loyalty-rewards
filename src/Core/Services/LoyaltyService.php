@@ -154,14 +154,9 @@ class LoyaltyService
             'customer_id' => $customerId->toString(),
         ]);
 
-        // Check if account already exists
-        try {
-            $existingAccount = $this->accountRepository->findByCustomerId($customerId);
-            if ($existingAccount) {
-                throw new \InvalidArgumentException('Account already exists for customer');
-            }
-        } catch (AccountNotFoundException) {
-            // Expected - account doesn't exist yet
+        // Check if account already exists (cheaper than loading)
+        if ($this->accountRepository->exists($customerId)) {
+            throw new \InvalidArgumentException('Account already exists for customer');
         }
 
         $account = LoyaltyAccount::create($customerId);

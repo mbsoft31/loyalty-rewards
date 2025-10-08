@@ -150,14 +150,28 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
 
     public function save(PointsTransaction $transaction): void
     {
-        $sql = "
-            INSERT INTO points_transactions (
-                id, account_id, type, points, context_data, created_at, processed_at
-            ) VALUES (
-                :id, :account_id, :type, :points, :context_data, :created_at, :processed_at
-            ) ON CONFLICT (id) DO UPDATE SET
-                processed_at = EXCLUDED.processed_at
-        ";
+        $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+        if ($driver === 'mysql') {
+            $sql = "
+                INSERT INTO points_transactions (
+                    id, account_id, type, points, context_data, created_at, processed_at
+                ) VALUES (
+                    :id, :account_id, :type, :points, :context_data, :created_at, :processed_at
+                ) ON DUPLICATE KEY UPDATE
+                    processed_at = VALUES(processed_at)
+            ";
+        } else {
+            // pgsql and sqlite support ON CONFLICT ... DO UPDATE
+            $sql = "
+                INSERT INTO points_transactions (
+                    id, account_id, type, points, context_data, created_at, processed_at
+                ) VALUES (
+                    :id, :account_id, :type, :points, :context_data, :created_at, :processed_at
+                ) ON CONFLICT (id) DO UPDATE SET
+                    processed_at = EXCLUDED.processed_at
+            ";
+        }
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
