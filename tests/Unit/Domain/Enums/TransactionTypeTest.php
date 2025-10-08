@@ -17,4 +17,3 @@ describe('TransactionType', function () {
         expect(TransactionType::EXPIRE->description())->toBe('Points Expired');
     });
 });
-

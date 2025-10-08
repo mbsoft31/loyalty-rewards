@@ -7,12 +7,13 @@ namespace LoyaltyRewards\Core\Services\FraudDetection;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
 use LoyaltyRewards\Domain\ValueObjects\{Money, TransactionContext};
 
-class AmountDetector
+readonly class AmountDetector
 {
     public function __construct(
-        private readonly float $suspiciousAmount = 1000.0,
-        private readonly float $highRiskAmount = 5000.0
-    ) {}
+        private float $suspiciousAmount = 1000.0,
+        private float $highRiskAmount = 5000.0
+    ) {
+    }
 
     public function analyze(
         LoyaltyAccount $account,

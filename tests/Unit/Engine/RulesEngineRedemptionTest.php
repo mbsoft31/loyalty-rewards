@@ -1,8 +1,8 @@
 <?php
 
 use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Domain\ValueObjects\{Currency, Points, TransactionContext};
 use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
-use LoyaltyRewards\Domain\ValueObjects\{Points, Currency, TransactionContext};
 use Psr\Log\NullLogger;
 
 describe('RulesEngine Redemption', function () {
@@ -26,4 +26,3 @@ describe('RulesEngine Redemption', function () {
         expect($value->toDollars())->toBe(5.0);
     });
 });
-

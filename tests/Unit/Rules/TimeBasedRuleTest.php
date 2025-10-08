@@ -1,7 +1,7 @@
 <?php
 
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\TimeBasedRule;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate, TransactionContext};
 
 describe('TimeBasedRule', function () {
     beforeEach(function () {
@@ -73,4 +73,3 @@ describe('TimeBasedRule', function () {
         expect($this->rule->getEndTime())->toEqual($this->end);
     });
 });
-

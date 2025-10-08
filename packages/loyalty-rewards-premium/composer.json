@@ -1,0 +1,16 @@
+{
+  "name": "mbsoft31/loyalty-rewards-premium",
+  "description": "Premium rules for Loyalty Rewards (advanced promotions & tiers)",
+  "type": "library",
+  "license": "Proprietary",
+  "require": {
+    "php": "^8.2",
+    "mbsoft31/loyalty-rewards": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "LoyaltyRewards\\Premium\\": "src/"
+    }
+  }
+}
+

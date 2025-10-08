@@ -16,7 +16,7 @@ describe('Points Value Object', function () {
     });
 
     it('throws exception for negative points', function () {
-        expect(fn() => Points::fromInt(-10))
+        expect(fn () => Points::fromInt(-10))
             ->toThrow(InvalidArgumentException::class, 'Points cannot be negative');
     });
 
@@ -42,7 +42,7 @@ describe('Points Value Object', function () {
         $points1 = Points::fromInt(50);
         $points2 = Points::fromInt(100);
 
-        expect(fn() => $points1->subtract($points2))
+        expect(fn () => $points1->subtract($points2))
             ->toThrow(InvalidArgumentException::class, 'Cannot subtract more points than available');
     });
 
@@ -57,7 +57,7 @@ describe('Points Value Object', function () {
     it('throws exception for negative multiplier', function () {
         $points = Points::fromInt(100);
 
-        expect(fn() => $points->multiply(-1.5))
+        expect(fn () => $points->multiply(-1.5))
             ->toThrow(InvalidArgumentException::class, 'Multiplier cannot be negative');
     });
 

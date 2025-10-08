@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Rules\Redemption;
 
+use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, Points, TransactionContext};
 use LoyaltyRewards\Rules\Contracts\RedemptionRuleInterface;
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money, Currency, TransactionContext};
 
 readonly class BasicRedemptionRule implements RedemptionRuleInterface
 {
@@ -13,7 +13,8 @@ readonly class BasicRedemptionRule implements RedemptionRuleInterface
         private Currency $currency,
         private int      $pointsPerDollar = 100, // 100 points = $1
         private int      $minimumPoints = 100
-    ) {}
+    ) {
+    }
 
     public function calculateRedemptionValue(Points $points, TransactionContext $context): Money
     {

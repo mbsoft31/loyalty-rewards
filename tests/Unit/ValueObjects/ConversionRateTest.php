@@ -23,4 +23,3 @@ describe('ConversionRate', function () {
         expect((string)$r)->toBe('x4');
     });
 });
-

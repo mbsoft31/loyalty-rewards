@@ -47,7 +47,6 @@ final class TransactionContext implements JsonSerializable
         return new self([...$data, ...$additionalData]);
     }
 
-
     public function get(string $key, mixed $default = null): mixed
     {
         return $this->data[$key] ?? $default;

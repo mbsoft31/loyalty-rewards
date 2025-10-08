@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Domain\Models;
 
-use LoyaltyRewards\Domain\ValueObjects\{TransactionId, AccountId, Points, TransactionContext};
-use LoyaltyRewards\Domain\Enums\TransactionType;
 use DateTimeImmutable;
 use JsonSerializable;
+use LoyaltyRewards\Domain\Enums\TransactionType;
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, Points, TransactionContext, TransactionId};
 
 final readonly class PointsTransaction implements JsonSerializable
 {
@@ -19,7 +19,8 @@ final readonly class PointsTransaction implements JsonSerializable
         private TransactionContext $context,
         private DateTimeImmutable $createdAt,
         private ?DateTimeImmutable $processedAt = null
-    ) {}
+    ) {
+    }
 
     public static function create(
         AccountId $accountId,

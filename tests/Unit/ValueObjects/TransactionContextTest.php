@@ -32,4 +32,3 @@ describe('TransactionContext', function () {
         expect($earning->get('x'))->toBe(1);
     });
 });
-

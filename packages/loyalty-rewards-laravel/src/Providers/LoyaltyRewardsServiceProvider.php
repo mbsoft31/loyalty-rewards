@@ -6,12 +6,12 @@ namespace LoyaltyRewards\Laravel\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Core\Services\{LoyaltyService, FraudDetectionService, AuditService};
+use LoyaltyRewards\Core\Services\{AuditService, FraudDetectionService, LoyaltyService};
 use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Infrastructure\Database\{DatabaseConnectionFactory, DatabaseAccountRepository, DatabaseTransactionRepository, DatabaseAuditRepository};
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money};
+use LoyaltyRewards\Infrastructure\Database\{DatabaseAccountRepository, DatabaseAuditRepository, DatabaseConnectionFactory, DatabaseTransactionRepository};
 use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, MinimumSpendRule};
 use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate};
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\NullLogger;
 
@@ -44,8 +44,8 @@ final class LoyaltyRewardsServiceProvider extends ServiceProvider
         });
 
         // Core services
-        $this->app->singleton(RulesEngine::class, fn() => new RulesEngine(new NullLogger()));
-        $this->app->singleton(FraudDetectionService::class, fn() => new FraudDetectionService(new NullLogger()));
+        $this->app->singleton(RulesEngine::class, fn () => new RulesEngine(new NullLogger()));
+        $this->app->singleton(FraudDetectionService::class, fn () => new FraudDetectionService(new NullLogger()));
         $this->app->singleton(AuditService::class, function ($app) {
             return new AuditService($app->make(DatabaseAuditRepository::class), new NullLogger());
         });
@@ -56,8 +56,11 @@ final class LoyaltyRewardsServiceProvider extends ServiceProvider
                 return $app->make(EventDispatcherInterface::class);
             }
 
-            return new class implements EventDispatcherInterface {
-                public function dispatch(object $event): object { return $event; }
+            return new class () implements EventDispatcherInterface {
+                public function dispatch(object $event): object
+                {
+                    return $event;
+                }
             };
         });
 

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Domain\Repositories;
 
+use DateTimeImmutable;
+use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
 use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
-use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
 
 interface AccountRepositoryInterface
 {
@@ -32,7 +33,7 @@ interface AccountRepositoryInterface
     /**
      * @return LoyaltyAccount[]
      */
-    public function findInactive(\DateTimeImmutable $since): array;
+    public function findInactive(DateTimeImmutable $since): array;
 
     /**
      * @return LoyaltyAccount[]

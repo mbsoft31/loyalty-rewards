@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Domain\Models;
 
-use LoyaltyRewards\Domain\ValueObjects\CustomerId;
-use LoyaltyRewards\Domain\ValueObjects\{Points, AccountId, TransactionContext};
-use LoyaltyRewards\Domain\Enums\{TransactionType, AccountStatus};
-use LoyaltyRewards\Domain\Events\{PointsEarnedEvent, PointsRedeemedEvent, AccountCreatedEvent};
-use LoyaltyRewards\Core\Exceptions\{InsufficientPointsException, InactiveAccountException};
 use DateTimeImmutable;
+use InvalidArgumentException;
 use JsonSerializable;
+use LoyaltyRewards\Core\Exceptions\{InactiveAccountException, InsufficientPointsException};
+use LoyaltyRewards\Domain\Enums\{AccountStatus, TransactionType};
+use LoyaltyRewards\Domain\Events\{AccountCreatedEvent, PointsEarnedEvent, PointsRedeemedEvent};
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 
 class LoyaltyAccount implements JsonSerializable
 {
@@ -25,7 +26,8 @@ class LoyaltyAccount implements JsonSerializable
         private AccountStatus $status,
         private readonly DateTimeImmutable $createdAt,
         private ?DateTimeImmutable $lastActivityAt = null
-    ) {}
+    ) {
+    }
 
     public static function create(CustomerId $customerId): self
     {
@@ -73,7 +75,7 @@ class LoyaltyAccount implements JsonSerializable
         $pointsToConfirm = $pointsToConfirm ?? $this->pendingPoints;
 
         if ($pointsToConfirm->isGreaterThan($this->pendingPoints)) {
-            throw new \InvalidArgumentException('Cannot confirm more points than pending');
+            throw new InvalidArgumentException('Cannot confirm more points than pending');
         }
 
         $this->availablePoints = $this->availablePoints->add($pointsToConfirm);

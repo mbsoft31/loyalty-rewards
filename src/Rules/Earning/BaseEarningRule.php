@@ -12,7 +12,8 @@ abstract class BaseEarningRule implements EarningRuleInterface
         protected readonly string $name,
         protected readonly string $description = '',
         protected readonly int $priority = 100
-    ) {}
+    ) {
+    }
 
     public function getName(): string
     {

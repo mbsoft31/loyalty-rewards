@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Tests\Support;
 
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 abstract class LoyaltyTestCase extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
 
     protected function tearDown(): void
     {

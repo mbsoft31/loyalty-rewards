@@ -1,13 +1,14 @@
 <?php
 
-use LoyaltyRewards\Core\Services\FraudDetectionService;
 use LoyaltyRewards\Core\Services\FraudDetection\FraudResult;
+use LoyaltyRewards\Core\Services\FraudDetectionService;
+use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, TransactionContext};
 use LoyaltyRewards\Tests\Support\Factories;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, TransactionContext};
+use Psr\Log\NullLogger;
 
 describe('FraudDetectionService', function () {
     beforeEach(function () {
-        $this->service = new FraudDetectionService(new \Psr\Log\NullLogger());
+        $this->service = new FraudDetectionService(new NullLogger());
         $this->account = Factories::loyaltyAccount();
     });
 

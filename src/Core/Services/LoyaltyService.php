@@ -4,27 +4,28 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Core\Services;
 
-use LoyaltyRewards\Domain\Models\LoyaltyAccount;
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money, CustomerId, TransactionContext};
-use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Core\Services\{FraudDetectionService, AuditService};
-use LoyaltyRewards\Core\Exceptions\{AccountNotFoundException, FraudDetectedException};
 use LoyaltyRewards\Application\DTOs\{EarningResult, RedemptionResult};
+use InvalidArgumentException;
+use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Core\Exceptions\{AccountNotFoundException, FraudDetectedException};
+use LoyaltyRewards\Domain\Models\LoyaltyAccount;
+use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
+use LoyaltyRewards\Domain\ValueObjects\{CustomerId, Money, Points, TransactionContext};
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-class LoyaltyService
+readonly class LoyaltyService
 {
     public function __construct(
-        private readonly AccountRepositoryInterface $accountRepository,
-        private readonly RulesEngine $rulesEngine,
-        private readonly FraudDetectionService $fraudDetection,
-        private readonly AuditService $auditService,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LoggerInterface $logger = new NullLogger()
-    ) {}
+        private AccountRepositoryInterface $accountRepository,
+        private RulesEngine                $rulesEngine,
+        private FraudDetectionService      $fraudDetection,
+        private AuditService               $auditService,
+        private EventDispatcherInterface   $eventDispatcher,
+        private LoggerInterface            $logger = new NullLogger()
+    ) {
+    }
 
     /**
      * @throws AccountNotFoundException
@@ -114,7 +115,7 @@ class LoyaltyService
 
         // Validate redemption using rules engine
         if (!$this->rulesEngine->canRedeem($pointsToRedeem, $context)) {
-            throw new \InvalidArgumentException('Redemption not allowed by current rules');
+            throw new InvalidArgumentException('Redemption not allowed by current rules');
         }
 
         // Calculate redemption value
@@ -156,7 +157,7 @@ class LoyaltyService
 
         // Check if account already exists (cheaper than loading)
         if ($this->accountRepository->exists($customerId)) {
-            throw new \InvalidArgumentException('Account already exists for customer');
+            throw new InvalidArgumentException('Account already exists for customer');
         }
 
         $account = LoyaltyAccount::create($customerId);

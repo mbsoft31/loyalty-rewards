@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Rules\Contracts;
 
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\{Money, Points, TransactionContext};
 
 interface RedemptionRuleInterface
 {

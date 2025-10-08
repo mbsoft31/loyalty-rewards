@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Infrastructure\Database;
 
-use LoyaltyRewards\Domain\Repositories\TransactionRepositoryInterface;
-use LoyaltyRewards\Domain\Models\PointsTransaction;
-use LoyaltyRewards\Domain\ValueObjects\{TransactionId, AccountId, CustomerId, Points, TransactionContext};
-use LoyaltyRewards\Domain\Enums\TransactionType;
 use DateTimeImmutable;
+use Exception;
+use LoyaltyRewards\Domain\Enums\TransactionType;
+use LoyaltyRewards\Domain\Models\PointsTransaction;
+use LoyaltyRewards\Domain\Repositories\TransactionRepositoryInterface;
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId, Points, TransactionContext, TransactionId};
 use PDO;
 
 readonly class DatabaseTransactionRepository implements TransactionRepositoryInterface
 {
-    public function __construct(private PDO $pdo) {}
+    public function __construct(private PDO $pdo)
+    {
+    }
 
     public function findById(TransactionId $id): ?PointsTransaction
     {
-        $sql = "SELECT * FROM points_transactions WHERE id = :id";
+        $sql = 'SELECT * FROM points_transactions WHERE id = :id';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id->toString()]);
 
@@ -28,12 +31,12 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
 
     public function findByAccountId(AccountId $accountId, int $limit = 100): array
     {
-        $sql = "
+        $sql = '
             SELECT * FROM points_transactions 
             WHERE account_id = :account_id 
             ORDER BY created_at DESC 
             LIMIT :limit
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue('account_id', $accountId->toString());
@@ -50,13 +53,13 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
 
     public function findByCustomerId(CustomerId $customerId, int $limit = 100): array
     {
-        $sql = "
+        $sql = '
             SELECT pt.* FROM points_transactions pt
             JOIN loyalty_accounts la ON pt.account_id = la.id
             WHERE la.customer_id = :customer_id
             ORDER BY pt.created_at DESC
             LIMIT :limit
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue('customer_id', $customerId->toString());
@@ -73,12 +76,12 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
 
     public function findByType(TransactionType $type, int $limit = 100): array
     {
-        $sql = "
+        $sql = '
             SELECT * FROM points_transactions 
             WHERE type = :type 
             ORDER BY created_at DESC 
             LIMIT :limit
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue('type', $type->value);
@@ -98,12 +101,12 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         DateTimeImmutable $to,
         int $limit = 1000
     ): array {
-        $sql = "
+        $sql = '
             SELECT * FROM points_transactions 
             WHERE created_at BETWEEN :from AND :to 
             ORDER BY created_at DESC 
             LIMIT :limit
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue('from', $from->format('Y-m-d H:i:s'));
@@ -125,13 +128,13 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         DateTimeImmutable $to,
         int $limit = 100
     ): array {
-        $sql = "
+        $sql = '
             SELECT * FROM points_transactions 
             WHERE account_id = :account_id 
               AND created_at BETWEEN :from AND :to 
             ORDER BY created_at DESC 
             LIMIT :limit
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue('account_id', $accountId->toString());
@@ -153,24 +156,24 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         if ($driver === 'mysql') {
-            $sql = "
+            $sql = '
                 INSERT INTO points_transactions (
                     id, account_id, type, points, context_data, created_at, processed_at
                 ) VALUES (
                     :id, :account_id, :type, :points, :context_data, :created_at, :processed_at
                 ) ON DUPLICATE KEY UPDATE
                     processed_at = VALUES(processed_at)
-            ";
+            ';
         } else {
             // pgsql and sqlite support ON CONFLICT ... DO UPDATE
-            $sql = "
+            $sql = '
                 INSERT INTO points_transactions (
                     id, account_id, type, points, context_data, created_at, processed_at
                 ) VALUES (
                     :id, :account_id, :type, :points, :context_data, :created_at, :processed_at
                 ) ON CONFLICT (id) DO UPDATE SET
                     processed_at = EXCLUDED.processed_at
-            ";
+            ';
         }
 
         $stmt = $this->pdo->prepare($sql);
@@ -198,7 +201,7 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
                 $this->save($transaction);
             }
             $this->pdo->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -206,7 +209,7 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
 
     public function findPendingTransactions(): array
     {
-        $sql = "SELECT * FROM points_transactions WHERE processed_at IS NULL ORDER BY created_at";
+        $sql = 'SELECT * FROM points_transactions WHERE processed_at IS NULL ORDER BY created_at';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
 
@@ -220,7 +223,7 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
 
     public function getTotalTransactions(): int
     {
-        $sql = "SELECT COUNT(*) FROM points_transactions";
+        $sql = 'SELECT COUNT(*) FROM points_transactions';
         $stmt = $this->pdo->query($sql);
 
         return (int) $stmt->fetchColumn();
@@ -243,7 +246,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
     }
 
     /**
-     * @throws \DateMalformedStringException
+     * @param array $row
+     * @return PointsTransaction
+     * @throws Exception
      */
     private function mapRowToTransaction(array $row): PointsTransaction
     {

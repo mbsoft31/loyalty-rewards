@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Application\DTOs;
 
-use LoyaltyRewards\Domain\Models\PointsTransaction;
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money};
 use JsonSerializable;
+use LoyaltyRewards\Domain\Models\PointsTransaction;
+use LoyaltyRewards\Domain\ValueObjects\{Money, Points};
 
 final readonly class RedemptionResult implements JsonSerializable
 {
@@ -14,8 +14,12 @@ final readonly class RedemptionResult implements JsonSerializable
         public PointsTransaction $transaction,
         public Points $newAvailableBalance,
         public ?Money $redemptionValue
-    ) {}
+    ) {
+    }
 
+    /**
+     * @return array{transaction: PointsTransaction, new_available_balance: int, redemption_value: array|null}
+     */
     public function jsonSerialize(): array
     {
         return [

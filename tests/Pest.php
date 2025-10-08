@@ -2,8 +2,15 @@
 
 declare(strict_types=1);
 
-use LoyaltyRewards\Tests\Support\LoyaltyTestCase;
+use LoyaltyRewards\Application\DTOs\EarningResult;
+use LoyaltyRewards\Application\DTOs\RedemptionResult;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Tests\Support\DatabaseTestCase;
+use LoyaltyRewards\Tests\Support\LoyaltyTestCase;
 use LoyaltyRewards\Tests\Support\PerformanceTestCase;
 
 /*
@@ -33,33 +40,33 @@ uses(PerformanceTestCase::class)->in('Integration/Performance');
 */
 
 expect()->extend('toBePoints', function (int $expectedValue) {
-    return $this->toBeInstanceOf(\LoyaltyRewards\Domain\ValueObjects\Points::class)
+    return $this->toBeInstanceOf(Points::class)
         ->and($this->value->value())->toBe($expectedValue);
 });
 
 expect()->extend('toBePositivePoints', function () {
-    return $this->toBeInstanceOf(\LoyaltyRewards\Domain\ValueObjects\Points::class)
+    return $this->toBeInstanceOf(Points::class)
         ->and($this->value->value())->toBeGreaterThan(0);
 });
 
 expect()->extend('toBeZeroPoints', function () {
-    return $this->toBeInstanceOf(\LoyaltyRewards\Domain\ValueObjects\Points::class)
+    return $this->toBeInstanceOf(Points::class)
         ->and($this->value->value())->toBe(0);
 });
 
 expect()->extend('toBeMoney', function (float $expectedDollars, string $expectedCurrency = 'USD') {
-    return $this->toBeInstanceOf(\LoyaltyRewards\Domain\ValueObjects\Money::class)
+    return $this->toBeInstanceOf(Money::class)
         ->and($this->value->toDollars())->toBe($expectedDollars)
         ->and($this->value->currency()->code())->toBe($expectedCurrency);
 });
 
 expect()->extend('toBeSuccessfulEarning', function () {
-    return $this->toBeInstanceOf(\LoyaltyRewards\Application\DTOs\EarningResult::class)
+    return $this->toBeInstanceOf(EarningResult::class)
         ->and($this->value->pointsEarned->value())->toBeGreaterThan(0);
 });
 
 expect()->extend('toBeSuccessfulRedemption', function () {
-    return $this->toBeInstanceOf(\LoyaltyRewards\Application\DTOs\RedemptionResult::class)
+    return $this->toBeInstanceOf(RedemptionResult::class)
         ->and($this->value->redemptionValue)->not->toBeNull();
 });
 
@@ -74,25 +81,25 @@ expect()->extend('toBeSuccessfulRedemption', function () {
 |
 */
 
-function createPoints(int $value = 100): \LoyaltyRewards\Domain\ValueObjects\Points
+function createPoints(int $value = 100): Points
 {
-    return \LoyaltyRewards\Domain\ValueObjects\Points::fromInt($value);
+    return Points::fromInt($value);
 }
 
-function createMoney(float $dollars = 100.0, string $currency = 'USD'): \LoyaltyRewards\Domain\ValueObjects\Money
+function createMoney(float $dollars = 100.0, string $currency = 'USD'): Money
 {
-    return \LoyaltyRewards\Domain\ValueObjects\Money::fromDollars(
+    return Money::fromDollars(
         $dollars,
-        new \LoyaltyRewards\Domain\ValueObjects\Currency($currency)
+        new Currency($currency)
     );
 }
 
-function createCustomerId(string $id = 'customer_123'): \LoyaltyRewards\Domain\ValueObjects\CustomerId
+function createCustomerId(string $id = 'customer_123'): CustomerId
 {
-    return \LoyaltyRewards\Domain\ValueObjects\CustomerId::fromString($id);
+    return CustomerId::fromString($id);
 }
 
-function createTransactionContext(array $data = []): \LoyaltyRewards\Domain\ValueObjects\TransactionContext
+function createTransactionContext(array $data = []): TransactionContext
 {
-    return \LoyaltyRewards\Domain\ValueObjects\TransactionContext::create($data);
+    return TransactionContext::create($data);
 }

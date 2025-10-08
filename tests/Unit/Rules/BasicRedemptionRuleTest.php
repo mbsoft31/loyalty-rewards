@@ -1,7 +1,7 @@
 <?php
 
+use LoyaltyRewards\Domain\ValueObjects\{Currency, Points, TransactionContext};
 use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
-use LoyaltyRewards\Domain\ValueObjects\{Points, Currency, TransactionContext};
 
 describe('BasicRedemptionRule', function () {
     beforeEach(function () {
@@ -25,4 +25,3 @@ describe('BasicRedemptionRule', function () {
         expect($this->rule->getName())->toBe('basic_redemption_rule');
     });
 });
-

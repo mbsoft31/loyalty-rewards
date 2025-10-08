@@ -1,0 +1,15 @@
+parameters:
+  level: 7
+  paths:
+    - src
+  excludePaths:
+    - vendor
+  checkMissingVarTagTypehint: false
+  checkMissingTypehints: true
+  reportUnmatchedIgnoredErrors: false
+  inferPrivatePropertyTypeFromConstructor: true
+  ignoreErrors:
+    -
+      message: '#fetchColumn\(\) on PDOStatement\|false#'
+      paths:
+        - src/Infrastructure/Database/*

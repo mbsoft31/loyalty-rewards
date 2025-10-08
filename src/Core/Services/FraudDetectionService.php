@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Core\Services;
 
+use LoyaltyRewards\Core\Services\FraudDetection\{AmountDetector, FraudResult, VelocityDetector};
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
 use LoyaltyRewards\Domain\ValueObjects\{Money, TransactionContext};
-use LoyaltyRewards\Core\Services\FraudDetection\{FraudResult, VelocityDetector, AmountDetector};
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 

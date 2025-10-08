@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Application\DTOs;
 
+use JsonSerializable;
 use LoyaltyRewards\Domain\Models\PointsTransaction;
 use LoyaltyRewards\Domain\ValueObjects\Points;
-use JsonSerializable;
 
 final readonly class EarningResult implements JsonSerializable
 {
@@ -15,8 +15,12 @@ final readonly class EarningResult implements JsonSerializable
         public Points $newAvailableBalance,
         public Points $newPendingBalance,
         public Points $pointsEarned
-    ) {}
+    ) {
+    }
 
+    /**
+     * @return array{transaction: PointsTransaction, new_available_balance: int, new_pending_balance: int, points_earned: int}
+     */
     public function jsonSerialize(): array
     {
         return [

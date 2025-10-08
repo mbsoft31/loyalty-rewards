@@ -1,7 +1,7 @@
 <?php
 
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\MinimumSpendRule;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate, TransactionContext};
 
 describe('MinimumSpendRule', function () {
     beforeEach(function () {
@@ -31,4 +31,3 @@ describe('MinimumSpendRule', function () {
         expect($points)->toBePoints(15000); // 100 * 100 * 1.5
     });
 });
-

@@ -18,7 +18,8 @@ final readonly class AuditRecord implements JsonSerializable
         public ?string $ipAddress,
         public ?string $userAgent,
         public DateTimeImmutable $createdAt
-    ) {}
+    ) {
+    }
 
     public static function create(
         string $entityType,

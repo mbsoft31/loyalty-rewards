@@ -1,8 +1,8 @@
 <?php
 
 use LoyaltyRewards\Application\DTOs\{EarningResult, RedemptionResult};
+use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, Points};
 use LoyaltyRewards\Tests\Support\Factories;
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money, Currency};
 
 describe('Application DTOs', function () {
     it('serializes EarningResult to json', function () {

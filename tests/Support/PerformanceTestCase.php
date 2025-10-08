@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Tests\Support;
 
-use LoyaltyRewards\Tests\Support\{DatabaseTestCase, BenchmarkRunner};
-
 abstract class PerformanceTestCase extends DatabaseTestCase
 {
     protected BenchmarkRunner $benchmark;

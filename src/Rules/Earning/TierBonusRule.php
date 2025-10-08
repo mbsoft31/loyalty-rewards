@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Rules\Earning;
 
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money, TransactionContext, ConversionRate};
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Money, Points, TransactionContext};
 
 class TierBonusRule extends BaseEarningRule
 {

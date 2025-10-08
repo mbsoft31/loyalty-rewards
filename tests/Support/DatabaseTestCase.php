@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace LoyaltyRewards\Tests\Support;
 
 use LoyaltyRewards\Infrastructure\Database\{
-    DatabaseConnectionFactory,
     DatabaseAccountRepository,
-    DatabaseTransactionRepository,
-    DatabaseAuditRepository
+    DatabaseAuditRepository,
+    DatabaseConnectionFactory,
+    DatabaseTransactionRepository
 };
+use Mockery;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Mockery;
 
 abstract class DatabaseTestCase extends TestCase
 {
@@ -156,7 +156,7 @@ abstract class DatabaseTestCase extends TestCase
             $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_transactions_account_type ON points_transactions(account_id, type)');
 
             $this->pdo->exec(
-                "CREATE TABLE IF NOT EXISTS audit_logs (
+                'CREATE TABLE IF NOT EXISTS audit_logs (
                     id UUID PRIMARY KEY,
                     entity_type VARCHAR(50) NOT NULL,
                     entity_id VARCHAR(255) NOT NULL,
@@ -166,7 +166,7 @@ abstract class DatabaseTestCase extends TestCase
                     ip_address INET,
                     user_agent TEXT,
                     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-                )"
+                )'
             );
             $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_audit_entity_type_id ON audit_logs(entity_type, entity_id)');
             $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action)');
@@ -213,7 +213,7 @@ abstract class DatabaseTestCase extends TestCase
         $this->pdo->exec('CREATE INDEX idx_accounts_last_activity ON loyalty_accounts(last_activity_at)');
 
         $this->pdo->exec(
-            "CREATE TABLE IF NOT EXISTS points_transactions (
+            'CREATE TABLE IF NOT EXISTS points_transactions (
                 id CHAR(36) PRIMARY KEY,
                 account_id CHAR(36) NOT NULL,
                 type VARCHAR(20) NOT NULL,
@@ -222,7 +222,7 @@ abstract class DatabaseTestCase extends TestCase
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 processed_at DATETIME NULL,
                 CONSTRAINT fk_pt_account FOREIGN KEY (account_id) REFERENCES loyalty_accounts(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB"
+            ) ENGINE=InnoDB'
         );
         $this->pdo->exec('CREATE INDEX idx_transactions_account_id ON points_transactions(account_id)');
         $this->pdo->exec('CREATE INDEX idx_transactions_type ON points_transactions(type)');
@@ -230,7 +230,7 @@ abstract class DatabaseTestCase extends TestCase
         $this->pdo->exec('CREATE INDEX idx_transactions_account_type ON points_transactions(account_id, type)');
 
         $this->pdo->exec(
-            "CREATE TABLE IF NOT EXISTS audit_logs (
+            'CREATE TABLE IF NOT EXISTS audit_logs (
                 id CHAR(36) PRIMARY KEY,
                 entity_type VARCHAR(50) NOT NULL,
                 entity_id VARCHAR(255) NOT NULL,
@@ -240,7 +240,7 @@ abstract class DatabaseTestCase extends TestCase
                 ip_address VARCHAR(45) NULL,
                 user_agent TEXT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB"
+            ) ENGINE=InnoDB'
         );
         $this->pdo->exec('CREATE INDEX idx_audit_entity_type_id ON audit_logs(entity_type, entity_id)');
         $this->pdo->exec('CREATE INDEX idx_audit_action ON audit_logs(action)');

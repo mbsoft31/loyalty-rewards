@@ -16,7 +16,9 @@
         "pestphp/pest": "^2.0",
         "mockery/mockery": "^1.6",
         "phpunit/phpunit": "^10.0",
-        "symfony/var-dumper": "^6.0"
+        "symfony/var-dumper": "^6.0",
+        "phpstan/phpstan": "^1.11",
+        "friendsofphp/php-cs-fixer": "^3.64"
     },
     "autoload": {
         "psr-4": {
@@ -36,7 +38,10 @@
         "test:coverage": "pest --coverage-html coverage",
         "test:clover": "pest --coverage-clover coverage.xml",
         "test:integration": "pest tests/Integration",
-        "test:filter": "pest --filter"
+        "test:filter": "pest --filter",
+        "stan": "phpstan analyse --memory-limit=512M",
+        "lint": "php-cs-fixer fix --dry-run --diff",
+        "lint:fix": "php-cs-fixer fix"
     },
     "config": {
         "optimize-autoloader": true,

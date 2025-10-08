@@ -6,13 +6,14 @@ namespace LoyaltyRewards\Core\Services\FraudDetection;
 
 use JsonSerializable;
 
-final class FraudResult implements JsonSerializable
+final readonly class FraudResult implements JsonSerializable
 {
     public function __construct(
         private float $score,
         private array $reasons = [],
         private array $detectorResults = []
-    ) {}
+    ) {
+    }
 
     public function getScore(): float
     {

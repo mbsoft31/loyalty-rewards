@@ -7,12 +7,13 @@ namespace LoyaltyRewards\Core\Services\FraudDetection;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
 use LoyaltyRewards\Domain\ValueObjects\{Money, TransactionContext};
 
-class VelocityDetector
+readonly class VelocityDetector
 {
     public function __construct(
-        private readonly int $maxDailyTransactions = 50,
-        private readonly float $maxDailyAmount = 10000.0
-    ) {}
+        private int   $maxDailyTransactions = 50,
+        private float $maxDailyAmount = 10000.0
+    ) {
+    }
 
     public function analyze(
         LoyaltyAccount $account,

@@ -1,8 +1,8 @@
 <?php
 
-use LoyaltyRewards\Domain\Models\{LoyaltyAccount, PointsTransaction};
-use LoyaltyRewards\Domain\ValueObjects\{TransactionId, Points};
 use LoyaltyRewards\Domain\Enums\TransactionType;
+use LoyaltyRewards\Domain\Models\{PointsTransaction};
+use LoyaltyRewards\Domain\ValueObjects\{Points};
 use LoyaltyRewards\Tests\Support\{DatabaseTestCase, Factories};
 
 describe('Database Transaction Repository Integration', function () {

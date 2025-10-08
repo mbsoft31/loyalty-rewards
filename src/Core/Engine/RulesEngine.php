@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Core\Engine;
 
+use JetBrains\PhpStorm\Pure;
+use LoyaltyRewards\Domain\ValueObjects\{Money, Points, TransactionContext};
 use LoyaltyRewards\Rules\Composites\CompositeEarningRule;
 use LoyaltyRewards\Rules\Contracts\{EarningRuleInterface, RedemptionRuleInterface};
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money, TransactionContext};
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -63,7 +64,7 @@ class RulesEngine
             'amount' => $amount->toDollars(),
             'currency' => $amount->currency()->code(),
             'points_earned' => $points->value(),
-            'applicable_rules' => array_map(fn($rule) => $rule->getName(), $applicableRules),
+            'applicable_rules' => array_map(fn ($rule) => $rule->getName(), $applicableRules),
             'execution_time_ms' => round($executionTime * 1000, 2),
         ]);
 
@@ -106,16 +107,24 @@ class RulesEngine
         return false;
     }
 
+    #[Pure]
     public function getEarningRules(): array
     {
         return $this->earningRules->getRules();
     }
 
+    /**
+     * @return RedemptionRuleInterface[]
+     */
     public function getRedemptionRules(): array
     {
         return $this->redemptionRules;
     }
 
+    /**
+     * @param TransactionContext $context
+     * @return array
+     */
     public function getApplicableEarningRules(TransactionContext $context): array
     {
         return $this->earningRules->getApplicableRules($context);

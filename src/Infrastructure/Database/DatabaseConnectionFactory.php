@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Infrastructure\Database;
 
+use InvalidArgumentException;
 use PDO;
 use PDOException;
+use RuntimeException;
 
 class DatabaseConnectionFactory
 {
@@ -26,7 +28,7 @@ class DatabaseConnectionFactory
 
             return $pdo;
         } catch (PDOException $e) {
-            throw new \RuntimeException("Database connection failed: {$e->getMessage()}", 0, $e);
+            throw new RuntimeException("Database connection failed: {$e->getMessage()}", 0, $e);
         }
     }
 
@@ -48,7 +50,7 @@ class DatabaseConnectionFactory
                 $config['database']
             ),
             'sqlite' => "sqlite:{$config['database']}",
-            default => throw new \InvalidArgumentException("Unsupported database driver: {$driver}")
+            default => throw new InvalidArgumentException("Unsupported database driver: {$driver}")
         };
     }
 

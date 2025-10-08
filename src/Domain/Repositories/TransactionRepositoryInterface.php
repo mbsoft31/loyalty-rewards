@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Domain\Repositories;
 
-use LoyaltyRewards\Domain\Models\PointsTransaction;
-use LoyaltyRewards\Domain\ValueObjects\{TransactionId, AccountId, CustomerId};
-use LoyaltyRewards\Domain\Enums\TransactionType;
 use DateTimeImmutable;
+use LoyaltyRewards\Domain\Enums\TransactionType;
+use LoyaltyRewards\Domain\Models\PointsTransaction;
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId, TransactionId};
 
 interface TransactionRepositoryInterface
 {

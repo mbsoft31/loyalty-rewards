@@ -1,11 +1,12 @@
 <?php
 
+use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Core\Services\{AuditService, FraudDetection\FraudResult, FraudDetectionService};
 use LoyaltyRewards\Core\Services\LoyaltyService;
 use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Core\Services\{FraudDetectionService, AuditService};
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate, TransactionContext};
+use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
 use LoyaltyRewards\Tests\Support\Factories;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\NullLogger;
@@ -15,7 +16,8 @@ describe('LoyaltyService Integration', function () {
         $this->accountRepository = mock(AccountRepositoryInterface::class);
         $this->rulesEngine = new RulesEngine(new NullLogger());
         $this->fraudDetection = mock(FraudDetectionService::class);
-        $this->auditService = mock(AuditService::class);
+        $this->auditRepository = mock(\LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface::class);
+        $this->auditService = new AuditService($this->auditRepository, new NullLogger());
         $this->eventDispatcher = mock(EventDispatcherInterface::class);
 
         $this->loyaltyService = new LoyaltyService(
@@ -44,7 +46,7 @@ describe('LoyaltyService Integration', function () {
         $this->rulesEngine->addEarningRule($rule);
 
         // Create a real FraudResult instead of mocking
-        $fraudResult = new \LoyaltyRewards\Core\Services\FraudDetection\FraudResult(0.1, []);
+        $fraudResult = new FraudResult(0.1, []);
         $this->fraudDetection->shouldReceive('analyze')
             ->andReturn($fraudResult);
 
@@ -56,8 +58,8 @@ describe('LoyaltyService Integration', function () {
             ->with($account)
             ->once();
 
-        // Mock audit service
-        $this->auditService->shouldReceive('logPointsEarned')->once();
+        // Expect audit store
+        $this->auditRepository->shouldReceive('store')->once();
 
         // Mock event dispatcher
         $this->eventDispatcher->shouldReceive('dispatch')->once();
@@ -81,7 +83,7 @@ describe('LoyaltyService Integration', function () {
         $pointsToRedeem = Factories::points(500);
 
         // Add redemption rule to the engine
-        $redemptionRule = new \LoyaltyRewards\Rules\Redemption\BasicRedemptionRule(Currency::USD(), 100, 100);
+        $redemptionRule = new BasicRedemptionRule(Currency::USD(), 100, 100);
         $this->rulesEngine->addRedemptionRule($redemptionRule);
 
         // Mock repository
@@ -92,8 +94,8 @@ describe('LoyaltyService Integration', function () {
             ->with($account)
             ->once();
 
-        // Mock audit service
-        $this->auditService->shouldReceive('logPointsRedeemed')->once();
+        // Expect audit store
+        $this->auditRepository->shouldReceive('store')->once();
 
         // Mock event dispatcher
         $this->eventDispatcher->shouldReceive('dispatch')->once();
@@ -107,7 +109,6 @@ describe('LoyaltyService Integration', function () {
         expect($result->redemptionValue)->not->toBeNull();
     });
 
-
     it('creates new account successfully', function () {
         $customerId = Factories::customerId();
 
@@ -117,8 +118,8 @@ describe('LoyaltyService Integration', function () {
             ->andReturn(false);
         $this->accountRepository->shouldReceive('save')->once();
 
-        // Mock audit service
-        $this->auditService->shouldReceive('logAccountCreated')->once();
+        // Expect audit store
+        $this->auditRepository->shouldReceive('store')->once();
 
         // Mock event dispatcher
         $this->eventDispatcher->shouldReceive('dispatch')->once();

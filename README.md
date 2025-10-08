@@ -297,6 +297,22 @@ Scalability Features:
 - [Examples (EXAMPLES.md)](EXAMPLES.md) — 10+ real-world implementations
 - [Configuration (CONFIGURATION.md)](CONFIGURATION.md) — Setup and customization options
 - [Laravel Adapter](packages/loyalty-rewards-laravel) — Service provider, config, and migrations
+ 
+## 🚢 Release Guide
+
+To cut a release:
+
+```bash
+# bump version via git tag (Composer reads tags)
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin v0.1.0
+
+# (optional) update Packagist after pushing tags
+# core:     https://packagist.org/packages/mbsoft31/loyalty-rewards
+# adapter:  https://packagist.org/packages/mbsoft31/loyalty-rewards-laravel
+```
+
+CI runs unit + integration tests and a DB matrix (Postgres 16, MySQL 8). Coverage gate enforces ≥80% on PHP 8.2.
 
 ## 🤝 Contributing
 

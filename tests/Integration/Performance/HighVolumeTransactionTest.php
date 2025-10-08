@@ -1,11 +1,12 @@
 <?php
 
-use LoyaltyRewards\Core\Services\LoyaltyService;
 use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Core\Services\{FraudDetectionService, AuditService};
+use LoyaltyRewards\Core\Services\{AuditService, FraudDetection\FraudResult, FraudDetectionService};
+use LoyaltyRewards\Core\Services\LoyaltyService;
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate};
+use LoyaltyRewards\Domain\Enums\TransactionType;
 use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency};
-use LoyaltyRewards\Tests\Support\{PerformanceTestCase, DataGenerator, Factories};
+use LoyaltyRewards\Tests\Support\{DataGenerator, Factories, PerformanceTestCase};
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\NullLogger;
 
@@ -22,12 +23,13 @@ describe('High Volume Transaction Performance', function () {
         ));
 
         $fraudDetection = mock(FraudDetectionService::class);
-        $fraudResult = new \LoyaltyRewards\Core\Services\FraudDetection\FraudResult(0.1, []);
+        $fraudResult = new FraudResult(0.1, []);
         $fraudDetection->shouldReceive('analyze')->andReturn($fraudResult);
 
-        $auditService = mock(AuditService::class);
-        $auditService->shouldReceive('logPointsEarned')->andReturn(null);
-        $auditService->shouldReceive('logAccountCreated')->andReturn(null);
+        $auditRepo = mock(\LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface::class);
+        $auditRepo->shouldReceive('store')->andReturnNull();
+        $auditRepo->shouldReceive('storeMany')->andReturnNull();
+        $auditService = new AuditService($auditRepo, new NullLogger());
 
         $eventDispatcher = mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')->andReturn(null);
@@ -150,9 +152,9 @@ describe('High Volume Transaction Performance', function () {
 
         // Benchmark various query operations
         $queryBenchmarks = [
-            'find_by_account' => fn() => $this->transactionRepository->findByAccountId($account->getId()),
-            'find_by_type' => fn() => $this->transactionRepository->findByType(\LoyaltyRewards\Domain\Enums\TransactionType::EARN),
-            'aggregate_totals' => fn() => $this->transactionRepository->getTotalTransactions(),
+            'find_by_account' => fn () => $this->transactionRepository->findByAccountId($account->getId()),
+            'find_by_type' => fn () => $this->transactionRepository->findByType(TransactionType::EARN),
+            'aggregate_totals' => fn () => $this->transactionRepository->getTotalTransactions(),
         ];
 
         foreach ($queryBenchmarks as $queryName => $queryFunction) {

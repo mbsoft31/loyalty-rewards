@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Tests\Support;
 
+use DateTimeImmutable;
+use LoyaltyRewards\Domain\Enums\{AccountStatus, TransactionType};
 use LoyaltyRewards\Domain\Models\{LoyaltyAccount, PointsTransaction};
 use LoyaltyRewards\Domain\ValueObjects\{
-    Points, Money, Currency, AccountId, CustomerId, TransactionId,
-    TransactionContext, ConversionRate
+    AccountId,
+    Currency,
+    CustomerId,
+    Money,
+    Points,
+    TransactionContext,
+    TransactionId
 };
-use LoyaltyRewards\Domain\Enums\{TransactionType, AccountStatus};
-use DateTimeImmutable;
 
 class Factories
 {

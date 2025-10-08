@@ -27,6 +27,14 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
+      - name: Run PHPStan (non-blocking)
+        continue-on-error: true
+        run: composer stan
+
+      - name: Run code style check (non-blocking)
+        continue-on-error: true
+        run: composer lint
+
       - name: Run tests
         run: composer test
 
@@ -38,3 +46,69 @@ jobs:
         if: matrix.php-version == '8.2'
         run: |
           php -r '$x=simplexml_load_file("coverage.xml"); $m=$x->project->metrics; $covered=(int)$m["coveredstatements"]; $total=max(1,(int)$m["statements"]); $pct=($covered/$total)*100; echo "Coverage: ".round($pct,2)."%\n"; if($pct<80){fwrite(STDERR, "Coverage ".round($pct,2)."% below threshold (80%)\n"); exit(1);} else { echo "OK: coverage threshold met.\n"; }'
+
+  db-tests:
+    runs-on: ubuntu-latest
+    name: DB Integration (PHP ${{ matrix.php-version }}, DB ${{ matrix.db }})
+    strategy:
+      matrix:
+        php-version: ['8.2']
+        db: [ 'pgsql', 'mysql' ]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -proot" --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, pdo, pdo_sqlite, pdo_mysql, pdo_pgsql
+
+      - name: Install DB clients (Postgres)
+        if: matrix.db == 'pgsql'
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Install DB clients (MySQL)
+        if: matrix.db == 'mysql'
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Create database (Postgres)
+        if: matrix.db == 'pgsql'
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -c 'CREATE DATABASE loyalty_test;'
+
+      - name: Create database (MySQL)
+        if: matrix.db == 'mysql'
+        run: mysql -h 127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS loyalty_test;"
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Run DB integration tests
+        env:
+          DB_CONNECTION: ${{ matrix.db }}
+          DB_HOST: 127.0.0.1
+          DB_PORT: ${{ matrix.db == 'mysql' && '3306' || '5432' }}
+          DB_DATABASE: loyalty_test
+          DB_USERNAME: ${{ matrix.db == 'mysql' && 'root' || 'postgres' }}
+          DB_PASSWORD: ${{ matrix.db == 'mysql' && 'root' || 'postgres' }}
+        run: |
+          composer test:integration

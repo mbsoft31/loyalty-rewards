@@ -15,14 +15,13 @@ describe('Currency Value Object', function () {
 
     it('throws exception for invalid currency codes', function () {
         // Test for too long currency code
-        expect(fn() => new Currency('TOOLONG'))
+        expect(fn () => new Currency('TOOLONG'))
             ->toThrow(InvalidArgumentException::class, 'Currency code must be 3 characters')
-            ->and(fn() => new Currency('US')) // Test for too short currency code
+            ->and(fn () => new Currency('US')) // Test for too short currency code
             ->toThrow(InvalidArgumentException::class, 'Currency code must be 3 characters')
-            ->and(fn() => new Currency('XXX')) // Test for unsupported but valid length currency code
+            ->and(fn () => new Currency('XXX')) // Test for unsupported but valid length currency code
             ->toThrow(InvalidArgumentException::class, 'Unsupported currency code');
     });
-
 
     it('formats amounts correctly', function () {
         $usd = Currency::USD();

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Infrastructure\Database;
 
-use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Domain\Models\LoyaltyAccount;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId, Points};
-use LoyaltyRewards\Domain\Enums\AccountStatus;
-use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
+use DateMalformedStringException;
 use DateTimeImmutable;
+use Exception;
+use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
+use LoyaltyRewards\Domain\Enums\AccountStatus;
+use LoyaltyRewards\Domain\Models\LoyaltyAccount;
+use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId, Points};
 use PDO;
 
 readonly class DatabaseAccountRepository implements AccountRepositoryInterface
@@ -17,11 +19,12 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
     public function __construct(
         private PDO                           $pdo,
         private DatabaseTransactionRepository $transactionRepository
-    ) {}
+    ) {
+    }
 
     public function findById(AccountId $id): LoyaltyAccount
     {
-        $sql = "SELECT * FROM loyalty_accounts WHERE id = :id";
+        $sql = 'SELECT * FROM loyalty_accounts WHERE id = :id';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id->toString()]);
 
@@ -36,7 +39,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
     public function findByCustomerId(CustomerId $customerId): LoyaltyAccount
     {
-        $sql = "SELECT * FROM loyalty_accounts WHERE customer_id = :customer_id";
+        $sql = 'SELECT * FROM loyalty_accounts WHERE customer_id = :customer_id';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['customer_id' => $customerId->toString()]);
 
@@ -59,7 +62,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
         $sql = "SELECT * FROM loyalty_accounts WHERE customer_id IN ({$placeholders}) ORDER BY created_at";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(array_map(fn($id) => (string) $id, $customerIds));
+        $stmt->execute(array_map(fn ($id) => (string) $id, $customerIds));
 
         $accounts = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -72,7 +75,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
     public function save(LoyaltyAccount $account): void
     {
         // Check if account exists
-        $existsSql = "SELECT COUNT(*) FROM loyalty_accounts WHERE id = :id";
+        $existsSql = 'SELECT COUNT(*) FROM loyalty_accounts WHERE id = :id';
         $existsStmt = $this->pdo->prepare($existsSql);
         $existsStmt->execute(['id' => $account->getId()->toString()]);
 
@@ -90,7 +93,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
     private function insertAccount(LoyaltyAccount $account): void
     {
-        $sql = "
+        $sql = '
             INSERT INTO loyalty_accounts (
                 id, customer_id, available_points, pending_points, lifetime_points, 
                 status, created_at, last_activity_at
@@ -98,7 +101,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
                 :id, :customer_id, :available_points, :pending_points, :lifetime_points,
                 :status, :created_at, :last_activity_at
             )
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
@@ -115,7 +118,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
     private function updateAccount(LoyaltyAccount $account): void
     {
-        $sql = "
+        $sql = '
             UPDATE loyalty_accounts SET 
                 available_points = :available_points,
                 pending_points = :pending_points,
@@ -124,7 +127,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
                 last_activity_at = :last_activity_at,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = :id
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
@@ -155,19 +158,19 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
     public function delete(AccountId $id): void
     {
-        $sql = "DELETE FROM loyalty_accounts WHERE id = :id";
+        $sql = 'DELETE FROM loyalty_accounts WHERE id = :id';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id->toString()]);
     }
 
     public function findInactive(DateTimeImmutable $since): array
     {
-        $sql = "
+        $sql = '
             SELECT * FROM loyalty_accounts 
             WHERE last_activity_at < :since 
                OR (last_activity_at IS NULL AND created_at < :since)
             ORDER BY last_activity_at ASC
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['since' => $since->format('Y-m-d H:i:s')]);
@@ -182,7 +185,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
     public function findWithPendingPoints(): array
     {
-        $sql = "SELECT * FROM loyalty_accounts WHERE pending_points > 0 ORDER BY created_at";
+        $sql = 'SELECT * FROM loyalty_accounts WHERE pending_points > 0 ORDER BY created_at';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
 
@@ -196,7 +199,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
     public function exists(CustomerId $customerId): bool
     {
-        $sql = "SELECT COUNT(*) FROM loyalty_accounts WHERE customer_id = :customer_id";
+        $sql = 'SELECT COUNT(*) FROM loyalty_accounts WHERE customer_id = :customer_id';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['customer_id' => $customerId->toString()]);
 
@@ -205,7 +208,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
     public function getTotalAccounts(): int
     {
-        $sql = "SELECT COUNT(*) FROM loyalty_accounts";
+        $sql = 'SELECT COUNT(*) FROM loyalty_accounts';
         $stmt = $this->pdo->query($sql);
 
         return (int) $stmt->fetchColumn();
@@ -220,7 +223,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
     }
 
     /**
-     * @throws \DateMalformedStringException
+     * @throws Exception
      */
     private function mapRowToAccount(array $row): LoyaltyAccount
     {

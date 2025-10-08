@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Infrastructure\Database;
 
-use LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface;
-use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use DateMalformedStringException;
 use DateTimeImmutable;
+use Exception;
+use LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface;
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 use PDO;
 
-class DatabaseAuditRepository implements AuditRepositoryInterface
+readonly class DatabaseAuditRepository implements AuditRepositoryInterface
 {
-    public function __construct(private readonly PDO $pdo) {}
+    public function __construct(private PDO $pdo)
+    {
+    }
 
     public function store(AuditRecord $record): void
     {
-        $sql = "
+        $sql = '
             INSERT INTO audit_logs (
                 entity_type, entity_id, action, user_id, data, 
                 ip_address, user_agent, created_at
@@ -24,7 +28,7 @@ class DatabaseAuditRepository implements AuditRepositoryInterface
                 :entity_type, :entity_id, :action, :user_id, :data,
                 :ip_address, :user_agent, :created_at
             )
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
@@ -52,7 +56,7 @@ class DatabaseAuditRepository implements AuditRepositoryInterface
                 $this->store($record);
             }
             $this->pdo->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->pdo->rollBack();
             throw $e;
         }
@@ -97,12 +101,12 @@ class DatabaseAuditRepository implements AuditRepositoryInterface
         DateTimeImmutable $to,
         int $limit = 1000
     ): array {
-        $sql = "
+        $sql = '
             SELECT * FROM audit_logs 
             WHERE created_at BETWEEN :from AND :to 
             ORDER BY created_at DESC 
             LIMIT :limit
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue('from', $from->format('Y-m-d H:i:s'));
@@ -115,12 +119,12 @@ class DatabaseAuditRepository implements AuditRepositoryInterface
 
     public function findByAction(string $action, int $limit = 100): array
     {
-        $sql = "
+        $sql = '
             SELECT * FROM audit_logs 
             WHERE action = :action 
             ORDER BY created_at DESC 
             LIMIT :limit
-        ";
+        ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue('action', $action);
@@ -132,7 +136,7 @@ class DatabaseAuditRepository implements AuditRepositoryInterface
 
     public function deleteOlderThan(DateTimeImmutable $date): int
     {
-        $sql = "DELETE FROM audit_logs WHERE created_at < :date";
+        $sql = 'DELETE FROM audit_logs WHERE created_at < :date';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['date' => $date->format('Y-m-d H:i:s')]);
 
@@ -141,11 +145,11 @@ class DatabaseAuditRepository implements AuditRepositoryInterface
 
     private function mapRowsToRecords(array $rows): array
     {
-        return array_map(fn($row) => $this->mapRowToRecord($row), $rows);
+        return array_map(fn ($row) => $this->mapRowToRecord($row), $rows);
     }
 
     /**
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException|Exception
      */
     private function mapRowToRecord(array $row): AuditRecord
     {

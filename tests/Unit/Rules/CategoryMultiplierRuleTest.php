@@ -1,8 +1,7 @@
 <?php
 
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate, TransactionContext};
-use LoyaltyRewards\Tests\Support\Factories;
 
 describe('CategoryMultiplierRule', function () {
     beforeEach(function () {
@@ -36,7 +35,7 @@ describe('CategoryMultiplierRule', function () {
     });
 
     it('is not applicable when no category specified', function () {
-        $context = TransactionContext::create([]);
+        $context = TransactionContext::create();
 
         expect($this->rule->isApplicable($context))->toBeFalse();
     });

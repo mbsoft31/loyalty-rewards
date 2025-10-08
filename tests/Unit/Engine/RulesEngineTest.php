@@ -1,10 +1,9 @@
 <?php
 
 use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
 use LoyaltyRewards\Rules\Earning\TierBonusRule;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate, TransactionContext};
-use LoyaltyRewards\Tests\Support\Factories;
 
 describe('RulesEngine', function () {
     beforeEach(function () {

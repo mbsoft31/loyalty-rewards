@@ -1,9 +1,7 @@
 <?php
 
-use LoyaltyRewards\Domain\Models\LoyaltyAccount;
-use LoyaltyRewards\Domain\ValueObjects\{CustomerId, Points};
-use LoyaltyRewards\Domain\Enums\AccountStatus;
 use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
+use LoyaltyRewards\Domain\ValueObjects\{CustomerId, Points};
 use LoyaltyRewards\Tests\Support\{DatabaseTestCase, Factories};
 
 describe('Database Account Repository Integration', function () {
@@ -124,7 +122,7 @@ describe('Database Account Repository Integration', function () {
     it('throws exception for non-existent account', function () {
         $nonExistentCustomerId = CustomerId::fromString('non_existent_customer');
 
-        expect(fn() => $this->accountRepository->findByCustomerId($nonExistentCustomerId))
+        expect(fn () => $this->accountRepository->findByCustomerId($nonExistentCustomerId))
             ->toThrow(AccountNotFoundException::class);
     });
 })->uses(DatabaseTestCase::class);

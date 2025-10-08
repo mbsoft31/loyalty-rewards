@@ -30,7 +30,7 @@ This document captures the current state of the project and a pragmatic monetiza
 ## Monetization Readiness
 - OSS core (MIT) + Laravel adapter package → Packagist‑ready.
 - Consulting “Integration Pack” can be offered now.
-- Premium pack plan exists (docs/PREMIUM_PACK.md) — needs implementation + private Composer distribution.
+- Premium pack skeleton added under `packages/loyalty-rewards-premium` (Advanced Promotions & Tiers) — ready for private Composer distribution.
 
 ## Gaps To Close (Short Term)
 - CI matrix: Add Postgres/MySQL services in `.github/workflows/tests.yml`. Run integration subsets with DB env (DatabaseTestCase is driver‑aware).
@@ -38,12 +38,12 @@ This document captures the current state of the project and a pragmatic monetiza
 - Packaging polish: Root README “Laravel Adapter” badge/section in place; publish core + adapter to Packagist and add Packagist badges.
 
 ## Prioritized Next Steps
-1) Multi‑DB testability (DatabaseTestCase driver‑aware)
+1) Multi‑DB testability (DatabaseTestCase driver‑aware) — DONE
 2) CI DB matrix (Pg + MySQL jobs with env)
-3) PHPStan + formatter + coverage gate
+3) PHPStan + formatter + coverage gate — PHPStan + CS Fixer added (non‑blocking in CI); coverage gate (≥80%) enabled
 4) Packagist publish (core + adapter) and badges
-5) Laravel adapter README + example config‑driven rules
-6) Premium pack initial release (Advanced Promotions & Tiers) via private Composer repo
+5) Laravel adapter README + example config‑driven rules — DONE
+6) Premium pack initial release (Advanced Promotions & Tiers) via private Composer repo — skeleton added
 
 ## Launch Plan (2–3 Weeks)
 - Week 0–1: DB testability + CI matrix; quality gates; publish to Packagist; README/Badges/Support blurb.

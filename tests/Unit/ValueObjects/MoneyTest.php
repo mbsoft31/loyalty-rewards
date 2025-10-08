@@ -1,6 +1,6 @@
 <?php
 
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate};
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money};
 
 describe('Money Value Object', function () {
     it('creates money from dollars', function () {
@@ -26,7 +26,7 @@ describe('Money Value Object', function () {
     });
 
     it('throws exception for negative amounts', function () {
-        expect(fn() => Money::fromDollars(-10.0, Currency::USD()))
+        expect(fn () => Money::fromDollars(-10.0, Currency::USD()))
             ->toThrow(InvalidArgumentException::class, 'Money amount cannot be negative');
     });
 
@@ -43,7 +43,7 @@ describe('Money Value Object', function () {
         $money1 = Money::fromDollars(10.0, Currency::USD());
         $money2 = Money::fromDollars(10.0, Currency::EUR());
 
-        expect(fn() => $money1->add($money2))
+        expect(fn () => $money1->add($money2))
             ->toThrow(InvalidArgumentException::class, 'Cannot operate on different currencies');
     });
 

@@ -1,7 +1,7 @@
 <?php
 
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\TierBonusRule;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, ConversionRate, TransactionContext};
 
 describe('TierBonusRule', function () {
     beforeEach(function () {
@@ -30,4 +30,3 @@ describe('TierBonusRule', function () {
         expect($points)->toBePoints(10000); // 80 * 100 * 1.25
     });
 });
-

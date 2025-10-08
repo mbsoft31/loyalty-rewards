@@ -1,7 +1,8 @@
 <?php
 
-use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 use LoyaltyRewards\Tests\Support\DatabaseTestCase;
 
 describe('Database Audit Repository Integration', function () {
@@ -45,8 +46,8 @@ describe('Database Audit Repository Integration', function () {
         $customerId = 'customer_abc';
         $rec = AuditRecord::create('loyalty_customer', $customerId, 'profile_updated');
         $this->auditRepository->store($rec);
-        $rows = $this->auditRepository->findByCustomer(\LoyaltyRewards\Domain\ValueObjects\CustomerId::fromString($customerId));
-        expect($rows)->toHaveCount(1);
-        expect($rows[0]->action)->toBe('profile_updated');
+        $rows = $this->auditRepository->findByCustomer(CustomerId::fromString($customerId));
+        expect($rows)->toHaveCount(1)
+            ->and($rows[0]->action)->toBe('profile_updated');
     });
 })->uses(DatabaseTestCase::class);

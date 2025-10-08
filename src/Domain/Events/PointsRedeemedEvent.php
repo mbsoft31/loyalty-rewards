@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Domain\Events;
 
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, Points};
-use LoyaltyRewards\Domain\Models\PointsTransaction;
 use DateTimeImmutable;
+use LoyaltyRewards\Domain\Models\PointsTransaction;
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, Points};
 
 final readonly class PointsRedeemedEvent
 {
@@ -15,5 +15,6 @@ final readonly class PointsRedeemedEvent
         public PointsTransaction $transaction,
         public Points $remainingPoints,
         public DateTimeImmutable $occurredAt = new DateTimeImmutable()
-    ) {}
+    ) {
+    }
 }

@@ -1,8 +1,8 @@
 <?php
 
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
 use LoyaltyRewards\Rules\Composites\CompositeEarningRule;
 use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, MinimumSpendRule};
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, TransactionContext, ConversionRate};
 
 describe('CompositeEarningRule', function () {
     beforeEach(function () {

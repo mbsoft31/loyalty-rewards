@@ -24,4 +24,3 @@ describe('AuditRecord', function () {
         expect($json['created_at'])->not->toBeNull();
     });
 });
-

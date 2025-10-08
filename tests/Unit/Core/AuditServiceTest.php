@@ -2,13 +2,14 @@
 
 use LoyaltyRewards\Core\Services\AuditService;
 use LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface;
+use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, Points, TransactionContext};
 use LoyaltyRewards\Tests\Support\Factories;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Currency, Points, TransactionContext};
+use Psr\Log\NullLogger;
 
 describe('AuditService', function () {
     beforeEach(function () {
         $this->repo = mock(AuditRepositoryInterface::class);
-        $this->service = new AuditService($this->repo, new \Psr\Log\NullLogger());
+        $this->service = new AuditService($this->repo, new NullLogger());
         $this->account = Factories::loyaltyAccount();
         $this->transaction = Factories::pointsTransaction($this->account->getId());
     });
@@ -51,4 +52,3 @@ describe('AuditService', function () {
         expect(true)->toBeTrue();
     });
 });
-

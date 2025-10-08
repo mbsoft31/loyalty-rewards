@@ -24,7 +24,7 @@ final readonly class AccountId implements JsonSerializable
     {
         try {
             return new self(Uuid::fromString($id));
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException("Invalid AccountId format: {$id}");
         }
     }

@@ -36,3 +36,37 @@ Then resolve `LoyaltyRewards\\Core\\Services\\LoyaltyService` from the container
 
 Note: Migrations are Postgres SQL files in the core repo; port or implement Laravel migrations before production.
 
+### Example: Config-driven Rules
+
+You can bootstrap rules from `config/loyalty-rewards.php` via the adapter's service provider:
+
+```php
+return [
+    'database' => [ /* ... */ ],
+    'rules' => [
+        'earning' => [
+            [
+                'type' => 'category_multiplier',
+                'category' => 'electronics',
+                'multiplier' => 2.0,
+                'priority' => 200,
+            ],
+            [
+                'type' => 'minimum_spend',
+                'currency' => 'USD',
+                'minimum' => 50.0,
+                'multiplier' => 1.2,
+                'priority' => 150,
+            ],
+        ],
+        'redemption' => [
+            [
+                'type' => 'basic',
+                'currency' => 'USD',
+                'points_per_dollar' => 100,
+                'min_points' => 200,
+            ],
+        ],
+    ],
+];
+```

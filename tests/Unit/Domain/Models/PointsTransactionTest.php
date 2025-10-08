@@ -13,4 +13,3 @@ describe('PointsTransaction', function () {
         expect($tx->isProcessed())->toBeFalse();
     });
 });
-

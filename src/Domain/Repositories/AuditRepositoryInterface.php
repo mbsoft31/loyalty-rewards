@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Domain\Repositories;
 
-use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
 use DateTimeImmutable;
+use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 
 interface AuditRepositoryInterface
 {

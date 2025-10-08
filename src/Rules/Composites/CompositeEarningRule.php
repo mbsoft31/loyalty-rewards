@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Rules\Composites;
 
+use LoyaltyRewards\Domain\ValueObjects\{Money, Points, TransactionContext};
 use LoyaltyRewards\Rules\Contracts\EarningRuleInterface;
-use LoyaltyRewards\Domain\ValueObjects\{Points, Money, TransactionContext};
 
 class CompositeEarningRule implements EarningRuleInterface
 {
@@ -24,14 +24,14 @@ class CompositeEarningRule implements EarningRuleInterface
         $this->rules[] = $rule;
 
         // Sort by priority (higher priority first)
-        usort($this->rules, fn($a, $b) => $b->getPriority() <=> $a->getPriority());
+        usort($this->rules, fn ($a, $b) => $b->getPriority() <=> $a->getPriority());
     }
 
     public function removeRule(string $ruleName): void
     {
         $this->rules = array_filter(
             $this->rules,
-            fn($rule) => $rule->getName() !== $ruleName
+            fn ($rule) => $rule->getName() !== $ruleName
         );
     }
 
@@ -82,11 +82,15 @@ class CompositeEarningRule implements EarningRuleInterface
         return $this->rules;
     }
 
+    /**
+     * @param TransactionContext $context
+     * @return list<EarningRuleInterface>
+     */
     public function getApplicableRules(TransactionContext $context): array
     {
         return array_filter(
             $this->rules,
-            fn($rule) => $rule->isApplicable($context)
+            fn ($rule) => $rule->isApplicable($context)
         );
     }
 }
