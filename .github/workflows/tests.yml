@@ -58,20 +58,28 @@ jobs:
       postgres:
         image: postgres:16
         env:
+          POSTGRES_DB: loyalty_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+          --health-cmd "pg_isready -U postgres -d loyalty_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
       mysql:
-        image: mysql:8
+        image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: loyalty_test
         ports:
           - 3306:3306
         options: >-
-          --health-cmd "mysqladmin ping -h 127.0.0.1 -proot" --health-interval 10s --health-timeout 5s --health-retries 5
+          --health-cmd "mysqladmin ping -h localhost -uroot -proot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -89,15 +97,27 @@ jobs:
         if: matrix.db == 'mysql'
         run: sudo apt-get update && sudo apt-get install -y mysql-client
 
-      - name: Create database (Postgres)
+      # DBs are created via service envs; still keep checks below
+
+      - name: Debug Database Connection (PostgreSQL)
         if: matrix.db == 'pgsql'
         env:
           PGPASSWORD: postgres
-        run: psql -h 127.0.0.1 -U postgres -c 'CREATE DATABASE loyalty_test;'
+        run: |
+          echo "Testing PostgreSQL connection..."
+          for i in {1..20}; do
+            psql -h 127.0.0.1 -U postgres -d loyalty_test -c "SELECT 1;" && break || sleep 2;
+          done
+          psql -h 127.0.0.1 -U postgres -l
 
-      - name: Create database (MySQL)
+      - name: Debug Database Connection (MySQL)
         if: matrix.db == 'mysql'
-        run: mysql -h 127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS loyalty_test;"
+        run: |
+          echo "Testing MySQL connection..."
+          for i in {1..20}; do
+            mysqladmin ping -h 127.0.0.1 -uroot -proot && break || sleep 2;
+          done
+          mysql -h 127.0.0.1 -uroot -proot -e "SHOW DATABASES;"
 
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
