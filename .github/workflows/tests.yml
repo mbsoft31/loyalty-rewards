@@ -102,13 +102,20 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Run DB integration tests
-        env:
-          DB_CONNECTION: ${{ matrix.db }}
-          DB_HOST: 127.0.0.1
-          DB_PORT: ${{ matrix.db == 'mysql' && '3306' || '5432' }}
-          DB_DATABASE: loyalty_test
-          DB_USERNAME: ${{ matrix.db == 'mysql' && 'root' || 'postgres' }}
-          DB_PASSWORD: ${{ matrix.db == 'mysql' && 'root' || 'postgres' }}
+      - name: Set DB environment
         run: |
-          composer test:integration
+          if [ "${{ matrix.db }}" = "mysql" ]; then
+            echo "DB_PORT=3306" >> $GITHUB_ENV
+            echo "DB_USERNAME=root" >> $GITHUB_ENV
+            echo "DB_PASSWORD=root" >> $GITHUB_ENV
+          else
+            echo "DB_PORT=5432" >> $GITHUB_ENV
+            echo "DB_USERNAME=postgres" >> $GITHUB_ENV
+            echo "DB_PASSWORD=postgres" >> $GITHUB_ENV
+          fi
+          echo "DB_CONNECTION=${{ matrix.db }}" >> $GITHUB_ENV
+          echo "DB_HOST=127.0.0.1" >> $GITHUB_ENV
+          echo "DB_DATABASE=loyalty_test" >> $GITHUB_ENV
+
+      - name: Run DB integration tests
+        run: composer test:integration
