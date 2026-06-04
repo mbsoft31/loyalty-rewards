@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Tests\Support;
 
-use LoyaltyRewards\Infrastructure\Database\{
-    DatabaseAccountRepository,
-    DatabaseAuditRepository,
-    DatabaseConnectionFactory,
-    DatabaseTransactionRepository
-};
+use LoyaltyRewards\Infrastructure\Database\DatabaseAccountRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseAuditRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseConnectionFactory;
+use LoyaltyRewards\Infrastructure\Database\DatabaseTransactionRepository;
 use Mockery;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -17,9 +15,13 @@ use PHPUnit\Framework\TestCase;
 abstract class DatabaseTestCase extends TestCase
 {
     protected ?PDO $pdo;
+
     protected string $driver = 'sqlite';
+
     protected DatabaseAccountRepository $accountRepository;
+
     protected DatabaseTransactionRepository $transactionRepository;
+
     protected DatabaseAuditRepository $auditRepository;
 
     protected function setUp(): void
@@ -46,6 +48,7 @@ abstract class DatabaseTestCase extends TestCase
 
         $this->createTables();
         $this->createIndexes();
+        $this->truncateAllTables();
         $this->seedTestData();
         $this->setupRepositories();
     }
@@ -116,6 +119,7 @@ abstract class DatabaseTestCase extends TestCase
                     FOREIGN KEY (account_id) REFERENCES loyalty_accounts(id) ON DELETE CASCADE
                 )
             ');
+
             return;
         }
 
@@ -134,9 +138,9 @@ abstract class DatabaseTestCase extends TestCase
                 )"
             );
 
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_accounts_customer_id ON loyalty_accounts(customer_id)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_accounts_status ON loyalty_accounts(status)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_accounts_last_activity ON loyalty_accounts(last_activity_at)');
+            $this->createIndexIfNotExists('idx_accounts_customer_id', 'loyalty_accounts', 'customer_id');
+            $this->createIndexIfNotExists('idx_accounts_status', 'loyalty_accounts', 'status');
+            $this->createIndexIfNotExists('idx_accounts_last_activity', 'loyalty_accounts', 'last_activity_at');
 
             $this->pdo->exec(
                 "CREATE TABLE IF NOT EXISTS points_transactions (
@@ -150,10 +154,10 @@ abstract class DatabaseTestCase extends TestCase
                     FOREIGN KEY (account_id) REFERENCES loyalty_accounts(id) ON DELETE CASCADE
                 )"
             );
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON points_transactions(account_id)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_transactions_type ON points_transactions(type)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON points_transactions(created_at)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_transactions_account_type ON points_transactions(account_id, type)');
+            $this->createIndexIfNotExists('idx_transactions_account_id', 'points_transactions', 'account_id');
+            $this->createIndexIfNotExists('idx_transactions_type', 'points_transactions', 'type');
+            $this->createIndexIfNotExists('idx_transactions_created_at', 'points_transactions', 'created_at');
+            $this->createIndexIfNotExists('idx_transactions_account_type', 'points_transactions', 'account_id, type');
 
             $this->pdo->exec(
                 'CREATE TABLE IF NOT EXISTS audit_logs (
@@ -168,9 +172,9 @@ abstract class DatabaseTestCase extends TestCase
                     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )'
             );
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_audit_entity_type_id ON audit_logs(entity_type, entity_id)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_audit_created_at ON audit_logs(created_at)');
+            $this->createIndexIfNotExists('idx_audit_entity_type_id', 'audit_logs', 'entity_type, entity_id');
+            $this->createIndexIfNotExists('idx_audit_action', 'audit_logs', 'action');
+            $this->createIndexIfNotExists('idx_audit_created_at', 'audit_logs', 'created_at');
 
             $this->pdo->exec(
                 "CREATE TABLE IF NOT EXISTS fraud_detection_logs (
@@ -187,11 +191,12 @@ abstract class DatabaseTestCase extends TestCase
                     FOREIGN KEY (account_id) REFERENCES loyalty_accounts(id) ON DELETE CASCADE
                 )"
             );
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_fraud_account_id ON fraud_detection_logs(account_id)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_fraud_customer_id ON fraud_detection_logs(customer_id)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_fraud_score ON fraud_detection_logs(fraud_score)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_fraud_action ON fraud_detection_logs(action_taken)');
-            $this->pdo->exec('CREATE INDEX IF NOT EXISTS idx_fraud_created_at ON fraud_detection_logs(created_at)');
+            $this->createIndexIfNotExists('idx_fraud_account_id', 'fraud_detection_logs', 'account_id');
+            $this->createIndexIfNotExists('idx_fraud_customer_id', 'fraud_detection_logs', 'customer_id');
+            $this->createIndexIfNotExists('idx_fraud_score', 'fraud_detection_logs', 'fraud_score');
+            $this->createIndexIfNotExists('idx_fraud_action', 'fraud_detection_logs', 'action_taken');
+            $this->createIndexIfNotExists('idx_fraud_created_at', 'fraud_detection_logs', 'created_at');
+
             return;
         }
 
@@ -209,8 +214,9 @@ abstract class DatabaseTestCase extends TestCase
                 last_activity_at DATETIME NULL
             ) ENGINE=InnoDB"
         );
-        $this->pdo->exec('CREATE INDEX idx_accounts_status ON loyalty_accounts(status)');
-        $this->pdo->exec('CREATE INDEX idx_accounts_last_activity ON loyalty_accounts(last_activity_at)');
+        $this->createIndexIfNotExists('idx_accounts_customer_id', 'loyalty_accounts', 'customer_id');
+        $this->createIndexIfNotExists('idx_accounts_status', 'loyalty_accounts', 'status');
+        $this->createIndexIfNotExists('idx_accounts_last_activity', 'loyalty_accounts', 'last_activity_at');
 
         $this->pdo->exec(
             'CREATE TABLE IF NOT EXISTS points_transactions (
@@ -224,10 +230,10 @@ abstract class DatabaseTestCase extends TestCase
                 CONSTRAINT fk_pt_account FOREIGN KEY (account_id) REFERENCES loyalty_accounts(id) ON DELETE CASCADE
             ) ENGINE=InnoDB'
         );
-        $this->pdo->exec('CREATE INDEX idx_transactions_account_id ON points_transactions(account_id)');
-        $this->pdo->exec('CREATE INDEX idx_transactions_type ON points_transactions(type)');
-        $this->pdo->exec('CREATE INDEX idx_transactions_created_at ON points_transactions(created_at)');
-        $this->pdo->exec('CREATE INDEX idx_transactions_account_type ON points_transactions(account_id, type)');
+        $this->createIndexIfNotExists('idx_transactions_account_id', 'points_transactions', 'account_id');
+        $this->createIndexIfNotExists('idx_transactions_type', 'points_transactions', 'type');
+        $this->createIndexIfNotExists('idx_transactions_created_at', 'points_transactions', 'created_at');
+        $this->createIndexIfNotExists('idx_transactions_account_type', 'points_transactions', 'account_id, type');
 
         $this->pdo->exec(
             'CREATE TABLE IF NOT EXISTS audit_logs (
@@ -242,9 +248,9 @@ abstract class DatabaseTestCase extends TestCase
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB'
         );
-        $this->pdo->exec('CREATE INDEX idx_audit_entity_type_id ON audit_logs(entity_type, entity_id)');
-        $this->pdo->exec('CREATE INDEX idx_audit_action ON audit_logs(action)');
-        $this->pdo->exec('CREATE INDEX idx_audit_created_at ON audit_logs(created_at)');
+        $this->createIndexIfNotExists('idx_audit_entity_type_id', 'audit_logs', 'entity_type, entity_id');
+        $this->createIndexIfNotExists('idx_audit_action', 'audit_logs', 'action');
+        $this->createIndexIfNotExists('idx_audit_created_at', 'audit_logs', 'created_at');
 
         $this->pdo->exec(
             "CREATE TABLE IF NOT EXISTS fraud_detection_logs (
@@ -261,11 +267,11 @@ abstract class DatabaseTestCase extends TestCase
                 CONSTRAINT fk_fraud_account FOREIGN KEY (account_id) REFERENCES loyalty_accounts(id) ON DELETE CASCADE
             ) ENGINE=InnoDB"
         );
-        $this->pdo->exec('CREATE INDEX idx_fraud_account_id ON fraud_detection_logs(account_id)');
-        $this->pdo->exec('CREATE INDEX idx_fraud_customer_id ON fraud_detection_logs(customer_id)');
-        $this->pdo->exec('CREATE INDEX idx_fraud_score ON fraud_detection_logs(fraud_score)');
-        $this->pdo->exec('CREATE INDEX idx_fraud_action ON fraud_detection_logs(action_taken)');
-        $this->pdo->exec('CREATE INDEX idx_fraud_created_at ON fraud_detection_logs(created_at)');
+        $this->createIndexIfNotExists('idx_fraud_account_id', 'fraud_detection_logs', 'account_id');
+        $this->createIndexIfNotExists('idx_fraud_customer_id', 'fraud_detection_logs', 'customer_id');
+        $this->createIndexIfNotExists('idx_fraud_score', 'fraud_detection_logs', 'fraud_score');
+        $this->createIndexIfNotExists('idx_fraud_action', 'fraud_detection_logs', 'action_taken');
+        $this->createIndexIfNotExists('idx_fraud_created_at', 'fraud_detection_logs', 'created_at');
     }
 
     private function createIndexes(): void
@@ -289,6 +295,50 @@ abstract class DatabaseTestCase extends TestCase
             }
         }
         // pgsql/mysql handled during createTables
+    }
+
+    private function createIndexIfNotExists(string $indexName, string $table, string $columns): void
+    {
+        if ($this->driver === 'sqlite') {
+            $this->pdo->exec(sprintf('CREATE INDEX IF NOT EXISTS %s ON %s (%s)', $indexName, $table, $columns));
+
+            return;
+        }
+
+        if ($this->indexExists($indexName, $table)) {
+            return;
+        }
+
+        $this->pdo->exec(sprintf('CREATE INDEX %s ON %s (%s)', $indexName, $table, $columns));
+    }
+
+    private function indexExists(string $indexName, string $table): bool
+    {
+        if ($this->driver === 'mysql') {
+            $stmt = $this->pdo->prepare(
+                'SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = :table_name AND index_name = :index_name'
+            );
+            $stmt->execute([
+                'table_name' => $table,
+                'index_name' => $indexName,
+            ]);
+
+            return (int) $stmt->fetchColumn() > 0;
+        }
+
+        if ($this->driver === 'pgsql') {
+            $stmt = $this->pdo->prepare(
+                'SELECT COUNT(*) FROM pg_indexes WHERE tablename = :table_name AND indexname = :index_name'
+            );
+            $stmt->execute([
+                'table_name' => $table,
+                'index_name' => $indexName,
+            ]);
+
+            return (int) $stmt->fetchColumn() > 0;
+        }
+
+        return false;
     }
 
     protected function seedTestData(): void
@@ -329,6 +379,7 @@ abstract class DatabaseTestCase extends TestCase
     protected function getTableRowCount(string $table): int
     {
         $stmt = $this->pdo->query("SELECT COUNT(*) FROM {$table}");
+
         return (int) $stmt->fetchColumn();
     }
 }

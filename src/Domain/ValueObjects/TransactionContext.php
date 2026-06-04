@@ -9,18 +9,27 @@ use JsonSerializable;
 
 final class TransactionContext implements JsonSerializable
 {
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function __construct(
-        private readonly array     $data = [],
+        private readonly array $data = [],
         private ?DateTimeImmutable $timestamp = null
     ) {
-        $this->timestamp = $timestamp ?? new DateTimeImmutable();
+        $this->timestamp = $timestamp ?? new DateTimeImmutable;
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public static function create(array $data = []): self
     {
         return new self($data);
     }
 
+    /**
+     * @param  array<string, mixed>  $additionalData
+     */
     public static function redemption(array $additionalData = []): self
     {
         return new self([
@@ -29,6 +38,9 @@ final class TransactionContext implements JsonSerializable
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $additionalData
+     */
     public static function earning(
         ?string $category = null,
         ?string $source = null,
@@ -77,11 +89,17 @@ final class TransactionContext implements JsonSerializable
         return new self([...$this->data, $key => $value], $this->timestamp);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function merge(array $data): self
     {
         return new self([...$this->data, ...$data], $this->timestamp);
     }
 
+    /**
+     * @return array{data: array<string, mixed>, timestamp: string}
+     */
     public function toArray(): array
     {
         return [
@@ -90,6 +108,9 @@ final class TransactionContext implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array{data: array<string, mixed>, timestamp: string}
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

@@ -4,23 +4,26 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Core\Engine;
 
-use JetBrains\PhpStorm\Pure;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Composites\CompositeEarningRule;
-use LoyaltyRewards\Rules\Contracts\{EarningRuleInterface, RedemptionRuleInterface};
+use LoyaltyRewards\Rules\Contracts\EarningRuleInterface;
+use LoyaltyRewards\Rules\Contracts\RedemptionRuleInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 class RulesEngine
 {
     private CompositeEarningRule $earningRules;
+
     /** @var RedemptionRuleInterface[] */
     private array $redemptionRules = [];
 
     public function __construct(
-        private readonly LoggerInterface $logger = new NullLogger()
+        private readonly LoggerInterface $logger = new NullLogger
     ) {
-        $this->earningRules = new CompositeEarningRule();
+        $this->earningRules = new CompositeEarningRule;
     }
 
     public function addEarningRule(EarningRuleInterface $rule): void
@@ -107,23 +110,24 @@ class RulesEngine
         return false;
     }
 
-    #[Pure]
+    /**
+     * @return list<EarningRuleInterface>
+     */
     public function getEarningRules(): array
     {
         return $this->earningRules->getRules();
     }
 
     /**
-     * @return RedemptionRuleInterface[]
+     * @return list<RedemptionRuleInterface>
      */
     public function getRedemptionRules(): array
     {
-        return $this->redemptionRules;
+        return array_values($this->redemptionRules);
     }
 
     /**
-     * @param TransactionContext $context
-     * @return array
+     * @return list<EarningRuleInterface>
      */
     public function getApplicableEarningRules(TransactionContext $context): array
     {

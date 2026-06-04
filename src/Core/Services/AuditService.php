@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace LoyaltyRewards\Core\Services;
 
 use LoyaltyRewards\Core\Services\FraudDetection\FraudResult;
-use LoyaltyRewards\Domain\Models\{LoyaltyAccount, PointsTransaction};
+use LoyaltyRewards\Domain\Models\LoyaltyAccount;
+use LoyaltyRewards\Domain\Models\PointsTransaction;
 use LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{Money, Points};
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
 use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 use Psr\Log\LoggerInterface;
@@ -17,9 +19,8 @@ readonly class AuditService
 {
     public function __construct(
         private AuditRepositoryInterface $auditRepository,
-        private LoggerInterface          $logger = new NullLogger()
-    ) {
-    }
+        private LoggerInterface $logger = new NullLogger
+    ) {}
 
     public function logAccountCreated(LoyaltyAccount $account, ?string $userId = null): void
     {

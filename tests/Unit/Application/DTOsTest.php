@@ -1,7 +1,10 @@
 <?php
 
-use LoyaltyRewards\Application\DTOs\{EarningResult, RedemptionResult};
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, Points};
+use LoyaltyRewards\Application\DTOs\EarningResult;
+use LoyaltyRewards\Application\DTOs\RedemptionResult;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
 use LoyaltyRewards\Tests\Support\Factories;
 
 describe('Application DTOs', function () {

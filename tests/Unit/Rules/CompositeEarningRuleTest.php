@@ -1,12 +1,16 @@
 <?php
 
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Composites\CompositeEarningRule;
-use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, MinimumSpendRule};
+use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
+use LoyaltyRewards\Rules\Earning\MinimumSpendRule;
 
 describe('CompositeEarningRule', function () {
     beforeEach(function () {
-        $this->composite = new CompositeEarningRule();
+        $this->composite = new CompositeEarningRule;
         $this->cat = new CategoryMultiplierRule('electronics', 2.0, ConversionRate::standard(), 200);
         $this->min = new MinimumSpendRule(Money::fromDollars(50, Currency::USD()), 1.2, ConversionRate::standard(), 150);
         $this->composite->addRule($this->cat);

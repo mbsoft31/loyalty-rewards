@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 
 abstract class LoyaltyTestCase extends TestCase
 {
-
     protected function tearDown(): void
     {
         Mockery::close();

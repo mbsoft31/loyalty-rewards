@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Core\Services;
 
-use LoyaltyRewards\Application\DTOs\{EarningResult, RedemptionResult};
 use InvalidArgumentException;
+use LoyaltyRewards\Application\DTOs\EarningResult;
+use LoyaltyRewards\Application\DTOs\RedemptionResult;
 use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Core\Exceptions\{AccountNotFoundException, FraudDetectedException};
+use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
+use LoyaltyRewards\Core\Exceptions\FraudDetectedException;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
 use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{CustomerId, Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -19,13 +24,12 @@ readonly class LoyaltyService
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
-        private RulesEngine                $rulesEngine,
-        private FraudDetectionService      $fraudDetection,
-        private AuditService               $auditService,
-        private EventDispatcherInterface   $eventDispatcher,
-        private LoggerInterface            $logger = new NullLogger()
-    ) {
-    }
+        private RulesEngine $rulesEngine,
+        private FraudDetectionService $fraudDetection,
+        private AuditService $auditService,
+        private EventDispatcherInterface $eventDispatcher,
+        private LoggerInterface $logger = new NullLogger
+    ) {}
 
     /**
      * @throws AccountNotFoundException
@@ -114,7 +118,7 @@ readonly class LoyaltyService
         $context = $context ?? TransactionContext::redemption();
 
         // Validate redemption using rules engine
-        if (!$this->rulesEngine->canRedeem($pointsToRedeem, $context)) {
+        if (! $this->rulesEngine->canRedeem($pointsToRedeem, $context)) {
             throw new InvalidArgumentException('Redemption not allowed by current rules');
         }
 
@@ -183,6 +187,7 @@ readonly class LoyaltyService
     public function getAccountBalance(CustomerId $customerId): Points
     {
         $account = $this->getAccount($customerId);
+
         return $account->getAvailablePoints();
     }
 

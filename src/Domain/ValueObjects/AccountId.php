@@ -11,9 +11,7 @@ use Ramsey\Uuid\UuidInterface;
 
 final readonly class AccountId implements JsonSerializable
 {
-    public function __construct(private UuidInterface $value)
-    {
-    }
+    public function __construct(private UuidInterface $value) {}
 
     public static function generate(): self
     {

@@ -1,13 +1,15 @@
 <?php
 
 use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
 use Psr\Log\NullLogger;
 
 describe('RulesEngine Redemption', function () {
     beforeEach(function () {
-        $this->engine = new RulesEngine(new NullLogger());
+        $this->engine = new RulesEngine(new NullLogger);
     });
 
     it('returns null value and false canRedeem when no rules apply', function () {

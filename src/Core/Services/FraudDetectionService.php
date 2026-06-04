@@ -4,23 +4,28 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Core\Services;
 
-use LoyaltyRewards\Core\Services\FraudDetection\{AmountDetector, FraudResult, VelocityDetector};
+use LoyaltyRewards\Core\Services\FraudDetection\AmountDetector;
+use LoyaltyRewards\Core\Services\FraudDetection\FraudDetectorInterface;
+use LoyaltyRewards\Core\Services\FraudDetection\FraudResult;
+use LoyaltyRewards\Core\Services\FraudDetection\VelocityDetector;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
-use LoyaltyRewards\Domain\ValueObjects\{Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 class FraudDetectionService
 {
+    /** @var list<FraudDetectorInterface> */
     private array $detectors = [];
 
     public function __construct(
-        private readonly LoggerInterface $logger = new NullLogger()
+        private readonly LoggerInterface $logger = new NullLogger
     ) {
         // Register default fraud detectors
         $this->detectors = [
-            new VelocityDetector(),
-            new AmountDetector(),
+            new VelocityDetector,
+            new AmountDetector,
         ];
     }
 
@@ -61,7 +66,7 @@ class FraudDetectionService
         return $overallResult;
     }
 
-    public function addDetector(object $detector): void
+    public function addDetector(FraudDetectorInterface $detector): void
     {
         $this->detectors[] = $detector;
     }

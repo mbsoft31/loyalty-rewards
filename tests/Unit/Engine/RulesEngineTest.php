@@ -1,13 +1,16 @@
 <?php
 
 use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
 use LoyaltyRewards\Rules\Earning\TierBonusRule;
 
 describe('RulesEngine', function () {
     beforeEach(function () {
-        $this->rulesEngine = new RulesEngine();
+        $this->rulesEngine = new RulesEngine;
     });
 
     it('calculates points with single rule', function () {
@@ -46,7 +49,7 @@ describe('RulesEngine', function () {
         $money = Money::fromDollars(100.0, Currency::USD());
         $context = TransactionContext::create([
             'category' => 'electronics',
-            'tier' => 'gold'
+            'tier' => 'gold',
         ]);
 
         $points = $this->rulesEngine->calculateEarning($money, $context);

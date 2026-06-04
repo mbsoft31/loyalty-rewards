@@ -11,9 +11,7 @@ use Ramsey\Uuid\UuidInterface;
 
 final readonly class TransactionId implements JsonSerializable
 {
-    public function __construct(private UuidInterface $value)
-    {
-    }
+    public function __construct(private UuidInterface $value) {}
 
     public static function generate(): self
     {
@@ -24,7 +22,7 @@ final readonly class TransactionId implements JsonSerializable
     {
         try {
             return new self(Uuid::fromString($id));
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException("Invalid TransactionId format: {$id}");
         }
     }

@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Rules\Composites;
 
-use LoyaltyRewards\Domain\ValueObjects\{Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Contracts\EarningRuleInterface;
 
 class CompositeEarningRule implements EarningRuleInterface
 {
-    /** @var EarningRuleInterface[] */
+    /** @var list<EarningRuleInterface> */
     private array $rules = [];
 
+    /**
+     * @param  list<EarningRuleInterface>  $rules
+     */
     public function __construct(array $rules = [])
     {
         foreach ($rules as $rule) {
@@ -29,10 +34,10 @@ class CompositeEarningRule implements EarningRuleInterface
 
     public function removeRule(string $ruleName): void
     {
-        $this->rules = array_filter(
+        $this->rules = array_values(array_filter(
             $this->rules,
             fn ($rule) => $rule->getName() !== $ruleName
-        );
+        ));
     }
 
     public function calculatePoints(Money $amount, TransactionContext $context): Points
@@ -77,20 +82,22 @@ class CompositeEarningRule implements EarningRuleInterface
         return 'Composite rule containing multiple earning rules';
     }
 
+    /**
+     * @return list<EarningRuleInterface>
+     */
     public function getRules(): array
     {
         return $this->rules;
     }
 
     /**
-     * @param TransactionContext $context
      * @return list<EarningRuleInterface>
      */
     public function getApplicableRules(TransactionContext $context): array
     {
-        return array_filter(
+        return array_values(array_filter(
             $this->rules,
             fn ($rule) => $rule->isApplicable($context)
-        );
+        ));
     }
 }

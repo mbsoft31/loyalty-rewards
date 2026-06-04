@@ -17,8 +17,8 @@ describe('TransactionContext', function () {
         $ctx2 = $ctx->with('b', 2);
         $ctx3 = $ctx2->merge(['c' => 3]);
         expect($ctx->toArray()['data'])->toHaveKeys(['a']);
-        expect($ctx2->toArray()['data'])->toHaveKeys(['a','b']);
-        expect($ctx3->toArray()['data'])->toHaveKeys(['a','b','c']);
+        expect($ctx2->toArray()['data'])->toHaveKeys(['a', 'b']);
+        expect($ctx3->toArray()['data'])->toHaveKeys(['a', 'b', 'c']);
     });
 
     it('factory methods set default data', function () {

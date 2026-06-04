@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace LoyaltyRewards\Domain\Events;
 
 use DateTimeImmutable;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 
 final readonly class AccountCreatedEvent
 {
     public function __construct(
         public AccountId $accountId,
         public CustomerId $customerId,
-        public DateTimeImmutable $occurredAt = new DateTimeImmutable()
-    ) {
-    }
+        public DateTimeImmutable $occurredAt = new DateTimeImmutable
+    ) {}
 }

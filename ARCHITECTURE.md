@@ -281,7 +281,7 @@ K --> L[AuditRepository]
 
 ## Technology Stack
 
-- PHP 8.2+
+- PHP 8.3+
 - PSR Standards: PSR-3 Logging, PSR-14 Events, PSR-16 Caching
 - Database: PostgresSQL primary, MySQL/SQLite support
 - Testing: Pest PHP

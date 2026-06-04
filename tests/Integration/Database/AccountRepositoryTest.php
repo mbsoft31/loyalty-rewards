@@ -1,8 +1,8 @@
 <?php
 
+use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
 use LoyaltyRewards\Tests\Support\DatabaseTestCase;
 use LoyaltyRewards\Tests\Support\Factories;
-use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
 
 describe('Database Account Repository Integration', function () {
     it('persists and retrieves account correctly', function () {
@@ -34,13 +34,24 @@ describe('Database Account Repository Integration', function () {
     it('finds inactive accounts correctly', function () {
         $old = Factories::loyaltyAccount();
         $this->accountRepository->save($old);
+
+        $createdAt = (new DateTimeImmutable)->modify('-7 day')->format('Y-m-d H:i:s');
+        $lastActivityAt = (new DateTimeImmutable)->modify('-5 day')->format('Y-m-d H:i:s');
+
         // backdate last_activity and created_at
-        $this->pdo->exec("UPDATE loyalty_accounts SET created_at = datetime('now','-7 day'), last_activity_at = datetime('now','-5 day') WHERE id = '{$old->getId()->toString()}'");
+        $stmt = $this->pdo->prepare(
+            'UPDATE loyalty_accounts SET created_at = :created_at, last_activity_at = :last_activity_at WHERE id = :id'
+        );
+        $stmt->execute([
+            'created_at' => $createdAt,
+            'last_activity_at' => $lastActivityAt,
+            'id' => $old->getId()->toString(),
+        ]);
 
         $recent = Factories::loyaltyAccount();
         $this->accountRepository->save($recent);
 
-        $since = (new DateTimeImmutable())->modify('-2 days');
+        $since = (new DateTimeImmutable)->modify('-2 days');
         $inactive = $this->accountRepository->findInactive($since);
         expect($inactive)->not->toBeEmpty();
     });
@@ -62,4 +73,3 @@ describe('Database Account Repository Integration', function () {
         expect($found->getId()->toString())->toBe($account->getId()->toString());
     });
 })->uses(DatabaseTestCase::class);
-

@@ -15,8 +15,7 @@ final readonly class EarningResult implements JsonSerializable
         public Points $newAvailableBalance,
         public Points $newPendingBalance,
         public Points $pointsEarned
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{transaction: PointsTransaction, new_available_balance: int, new_pending_balance: int, points_earned: int}

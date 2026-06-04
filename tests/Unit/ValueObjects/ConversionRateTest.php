@@ -20,6 +20,6 @@ describe('ConversionRate', function () {
         $r = ConversionRate::fromMultiplier(4.0);
         expect($r->inverse()->multiplier())->toBe(0.25);
         expect($r->jsonSerialize())->toBe(4.0);
-        expect((string)$r)->toBe('x4');
+        expect((string) $r)->toBe('x4');
     });
 });

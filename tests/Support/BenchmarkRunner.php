@@ -7,6 +7,7 @@ namespace LoyaltyRewards\Tests\Support;
 class BenchmarkRunner
 {
     private bool $memoryTrackingEnabled = false;
+
     private array $results = [];
 
     public function enableMemoryTracking(): void

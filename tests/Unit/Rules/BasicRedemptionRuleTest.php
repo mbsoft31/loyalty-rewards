@@ -1,6 +1,8 @@
 <?php
 
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
 
 describe('BasicRedemptionRule', function () {

@@ -7,14 +7,21 @@ namespace LoyaltyRewards\Domain\Models;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use JsonSerializable;
-use LoyaltyRewards\Core\Exceptions\{InactiveAccountException, InsufficientPointsException};
-use LoyaltyRewards\Domain\Enums\{AccountStatus, TransactionType};
-use LoyaltyRewards\Domain\Events\{AccountCreatedEvent, PointsEarnedEvent, PointsRedeemedEvent};
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, Points, TransactionContext};
+use LoyaltyRewards\Core\Exceptions\InactiveAccountException;
+use LoyaltyRewards\Core\Exceptions\InsufficientPointsException;
+use LoyaltyRewards\Domain\Enums\AccountStatus;
+use LoyaltyRewards\Domain\Enums\TransactionType;
+use LoyaltyRewards\Domain\Events\AccountCreatedEvent;
+use LoyaltyRewards\Domain\Events\PointsEarnedEvent;
+use LoyaltyRewards\Domain\Events\PointsRedeemedEvent;
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
 use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 
 class LoyaltyAccount implements JsonSerializable
 {
+    /** @var list<object> */
     private array $events = [];
 
     public function __construct(
@@ -26,8 +33,7 @@ class LoyaltyAccount implements JsonSerializable
         private AccountStatus $status,
         private readonly DateTimeImmutable $createdAt,
         private ?DateTimeImmutable $lastActivityAt = null
-    ) {
-    }
+    ) {}
 
     public static function create(CustomerId $customerId): self
     {
@@ -38,10 +44,11 @@ class LoyaltyAccount implements JsonSerializable
             Points::zero(),
             Points::zero(),
             AccountStatus::ACTIVE,
-            new DateTimeImmutable()
+            new DateTimeImmutable
         );
 
         $account->recordEvent(new AccountCreatedEvent($account->id, $customerId));
+
         return $account;
     }
 
@@ -58,7 +65,7 @@ class LoyaltyAccount implements JsonSerializable
 
         // Add to pending points first
         $this->pendingPoints = $this->pendingPoints->add($points);
-        $this->lastActivityAt = new DateTimeImmutable();
+        $this->lastActivityAt = new DateTimeImmutable;
 
         $this->recordEvent(new PointsEarnedEvent(
             $this->id,
@@ -98,7 +105,7 @@ class LoyaltyAccount implements JsonSerializable
         );
 
         $this->availablePoints = $this->availablePoints->subtract($pointsToRedeem);
-        $this->lastActivityAt = new DateTimeImmutable();
+        $this->lastActivityAt = new DateTimeImmutable;
 
         $this->recordEvent(new PointsRedeemedEvent(
             $this->id,
@@ -118,7 +125,7 @@ class LoyaltyAccount implements JsonSerializable
 
         $context = TransactionContext::create([
             'reason' => $reason,
-            'type' => 'adjustment'
+            'type' => 'adjustment',
         ]);
 
         $transaction = PointsTransaction::create(
@@ -142,7 +149,7 @@ class LoyaltyAccount implements JsonSerializable
             }
         }
 
-        $this->lastActivityAt = new DateTimeImmutable();
+        $this->lastActivityAt = new DateTimeImmutable;
 
         return $transaction;
     }
@@ -160,7 +167,7 @@ class LoyaltyAccount implements JsonSerializable
 
         $context = TransactionContext::create([
             'type' => 'expiration',
-            'expired_points' => $actualExpired->value()
+            'expired_points' => $actualExpired->value(),
         ]);
 
         $transaction = PointsTransaction::create(
@@ -171,7 +178,7 @@ class LoyaltyAccount implements JsonSerializable
         );
 
         $this->availablePoints = $this->availablePoints->subtract($actualExpired);
-        $this->lastActivityAt = new DateTimeImmutable();
+        $this->lastActivityAt = new DateTimeImmutable;
 
         return $transaction;
     }
@@ -250,6 +257,9 @@ class LoyaltyAccount implements JsonSerializable
     }
 
     // Event handling
+    /**
+     * @return list<object>
+     */
     public function getEvents(): array
     {
         return $this->events;
@@ -268,7 +278,7 @@ class LoyaltyAccount implements JsonSerializable
     // Guards
     private function guardAgainstInactiveAccount(): void
     {
-        if (!$this->canEarnPoints()) {
+        if (! $this->canEarnPoints()) {
             throw new InactiveAccountException(
                 "Cannot perform operations on {$this->status->value} account"
             );
@@ -277,13 +287,25 @@ class LoyaltyAccount implements JsonSerializable
 
     private function guardAgainstInsufficientPoints(Points $required): void
     {
-        if (!$this->availablePoints->isGreaterThanOrEqual($required)) {
+        if (! $this->availablePoints->isGreaterThanOrEqual($required)) {
             throw new InsufficientPointsException(
                 "Insufficient points. Required: {$required->value()}, Available: {$this->availablePoints->value()}"
             );
         }
     }
 
+    /**
+     * @return array{
+     *     id: string,
+     *     customer_id: string,
+     *     available_points: int,
+     *     pending_points: int,
+     *     lifetime_points: int,
+     *     status: string,
+     *     created_at: string,
+     *     last_activity_at: string|null
+     * }
+     */
     public function jsonSerialize(): array
     {
         return [

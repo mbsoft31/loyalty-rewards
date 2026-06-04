@@ -3,11 +3,9 @@ parameters:
   paths:
     - src
   excludePaths:
-    - vendor
-  checkMissingVarTagTypehint: false
-  checkMissingTypehints: true
+    analyse:
+      - vendor
   reportUnmatchedIgnoredErrors: false
-  inferPrivatePropertyTypeFromConstructor: true
   ignoreErrors:
     -
       message: '#fetchColumn\(\) on PDOStatement\|false#'

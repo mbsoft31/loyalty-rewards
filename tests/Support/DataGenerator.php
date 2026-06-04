@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Tests\Support;
 
-use LoyaltyRewards\Domain\ValueObjects\{Currency, CustomerId, Money, Points, TransactionContext};
 use DateTimeImmutable;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 
 class DataGenerator
 {
@@ -15,7 +19,7 @@ class DataGenerator
 
         for ($i = 0; $i < $count; $i++) {
             $accounts[] = Factories::loyaltyAccount(
-                customerId: CustomerId::fromString('customer_' . str_pad((string)$i, 6, '0', STR_PAD_LEFT)),
+                customerId: CustomerId::fromString('customer_'.str_pad((string) $i, 6, '0', STR_PAD_LEFT)),
                 availablePoints: Points::fromInt(rand(0, 10000)),
                 pendingPoints: Points::fromInt(rand(0, 1000))
             );
@@ -34,8 +38,8 @@ class DataGenerator
             $contexts[] = TransactionContext::create([
                 'category' => $categories[array_rand($categories)],
                 'source' => $sources[array_rand($sources)],
-                'transaction_id' => 'txn_' . uniqid(),
-                'timestamp' => (new DateTimeImmutable())->modify('-' . rand(0, 365) . ' days'),
+                'transaction_id' => 'txn_'.uniqid(),
+                'timestamp' => (new DateTimeImmutable)->modify('-'.rand(0, 365).' days'),
                 'amount' => rand(1000, 50000) / 100, // $10.00 to $500.00
             ]);
         }
@@ -69,7 +73,7 @@ class DataGenerator
                 'context' => TransactionContext::create([
                     'category' => ['electronics', 'groceries', 'travel'][rand(0, 2)],
                     'source' => 'bulk_import',
-                    'batch_id' => 'batch_' . date('Y-m-d-H-i-s'),
+                    'batch_id' => 'batch_'.date('Y-m-d-H-i-s'),
                 ]),
             ];
         }
@@ -85,7 +89,7 @@ class DataGenerator
         for ($i = 0; $i < $operationCount; $i++) {
             $operations[] = [
                 'type' => $operationTypes[array_rand($operationTypes)],
-                'customer_id' => CustomerId::fromString('concurrent_customer_' . rand(1, $accountCount)),
+                'customer_id' => CustomerId::fromString('concurrent_customer_'.rand(1, $accountCount)),
                 'points' => Points::fromInt(rand(50, 1000)),
                 'amount' => Money::fromDollars(rand(500, 5000) / 100, Currency::USD()),
                 'context' => TransactionContext::create([

@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Premium\Rules\Redemption;
 
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Contracts\RedemptionRuleInterface;
 
 final class CampaignRedemptionRule implements RedemptionRuleInterface
 {
     private Currency $currency;
+
     /** @var array<string,int> */
     private array $campaignPointsPerDollar;
+
     private int $defaultPointsPerDollar;
+
     private int $minimumPoints;
 
     /**
-     * @param array<string,int> $campaignPointsPerDollar
+     * @param  array<string,int>  $campaignPointsPerDollar
      */
     public function __construct(
         Currency $currency,
@@ -35,6 +41,7 @@ final class CampaignRedemptionRule implements RedemptionRuleInterface
         $campaign = (string) $context->get('campaign', '');
         $ppd = $this->campaignPointsPerDollar[$campaign] ?? $this->defaultPointsPerDollar;
         $dollars = $points->value() / $ppd;
+
         return Money::fromDollars($dollars, $this->currency);
     }
 

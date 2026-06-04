@@ -31,7 +31,7 @@ Example `composer.json` for the premium pack:
   "type": "library",
   "license": "Proprietary",
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "mbsoft31/loyalty-rewards": "^1.0"
   },
   "autoload": {"psr-4": {"LoyaltyRewards\\\\Premium\\\\": "src/"}}

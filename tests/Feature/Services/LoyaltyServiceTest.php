@@ -1,10 +1,16 @@
 <?php
 
 use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Core\Services\{AuditService, FraudDetection\FraudResult, FraudDetectionService};
+use LoyaltyRewards\Core\Services\AuditService;
+use LoyaltyRewards\Core\Services\FraudDetection\FraudResult;
+use LoyaltyRewards\Core\Services\FraudDetectionService;
 use LoyaltyRewards\Core\Services\LoyaltyService;
 use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
+use LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface;
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
 use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
 use LoyaltyRewards\Tests\Support\Factories;
@@ -14,10 +20,10 @@ use Psr\Log\NullLogger;
 describe('LoyaltyService Integration', function () {
     beforeEach(function () {
         $this->accountRepository = mock(AccountRepositoryInterface::class);
-        $this->rulesEngine = new RulesEngine(new NullLogger());
+        $this->rulesEngine = new RulesEngine(new NullLogger);
         $this->fraudDetection = mock(FraudDetectionService::class);
-        $this->auditRepository = mock(\LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface::class);
-        $this->auditService = new AuditService($this->auditRepository, new NullLogger());
+        $this->auditRepository = mock(AuditRepositoryInterface::class);
+        $this->auditService = new AuditService($this->auditRepository, new NullLogger);
         $this->eventDispatcher = mock(EventDispatcherInterface::class);
 
         $this->loyaltyService = new LoyaltyService(
@@ -26,7 +32,7 @@ describe('LoyaltyService Integration', function () {
             $this->fraudDetection,
             $this->auditService,
             $this->eventDispatcher,
-            new NullLogger()
+            new NullLogger
         );
     });
 
@@ -69,7 +75,7 @@ describe('LoyaltyService Integration', function () {
 
         // Assert
         expect($result)->toBeSuccessfulEarning()
-            ->and($result->pointsEarned)->toBePoints(20000);// $100 * 100 * 2.0
+            ->and($result->pointsEarned)->toBePoints(20000); // $100 * 100 * 2.0
 
     });
 

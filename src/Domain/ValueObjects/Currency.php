@@ -28,7 +28,7 @@ final class Currency implements JsonSerializable
             throw new InvalidArgumentException('Currency code must be 3 characters');
         }
 
-        if (!isset(self::SUPPORTED_CURRENCIES[$code])) {
+        if (! isset(self::SUPPORTED_CURRENCIES[$code])) {
             throw new InvalidArgumentException("Unsupported currency code: {$code}");
         }
 
@@ -55,6 +55,9 @@ final class Currency implements JsonSerializable
         return new self('NGN');
     }
 
+    /**
+     * @return list<string>
+     */
     public static function supportedCurrencies(): array
     {
         return array_keys(self::SUPPORTED_CURRENCIES);
@@ -90,14 +93,14 @@ final class Currency implements JsonSerializable
         $decimals = $this->decimals();
         $formatted = number_format($amount, $decimals);
 
-        if (!$includeSymbol) {
+        if (! $includeSymbol) {
             return $formatted;
         }
 
         return match ($this->code) {
-            'USD', 'CAD', 'AUD', 'JPY', 'EUR', 'GBP', 'NGN' => $this->symbol() . $formatted,
-            'DZD' => $formatted . ' ' . $this->symbol(),
-            default => $formatted . ' ' . $this->code,
+            'USD', 'CAD', 'AUD', 'JPY', 'EUR', 'GBP', 'NGN' => $this->symbol().$formatted,
+            'DZD' => $formatted.' '.$this->symbol(),
+            default => $formatted.' '.$this->code,
         };
     }
 
