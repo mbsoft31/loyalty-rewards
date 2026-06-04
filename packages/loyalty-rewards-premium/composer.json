@@ -2,7 +2,7 @@
   "name": "mbsoft31/loyalty-rewards-premium",
   "description": "Premium rules for Loyalty Rewards (advanced promotions & tiers)",
   "type": "library",
-  "license": "Proprietary",
+  "license": "proprietary",
   "require": {
     "php": "^8.3",
     "mbsoft31/loyalty-rewards": "^1.1.1"
