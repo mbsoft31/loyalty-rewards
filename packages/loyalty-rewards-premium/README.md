@@ -15,7 +15,7 @@ This package is a commercial add‑on for advanced earning/redemption rules.
     {"type": "composer", "url": "https://<your-private-repo>"}
   ],
   "require": {
-    "mbsoft31/loyalty-rewards-premium": "^1.0"
+    "mbsoft31/loyalty-rewards-premium": "^1.1.1"
   }
 }
 ```
@@ -38,4 +38,6 @@ $engine->addEarningRule(new LoyaltyRewards\Premium\Rules\Earning\PartnerCatalogR
 ```
 
 > Licensing: Proprietary. Distribute via Private Packagist, Satis, or GitHub Packages.
+
+> Compatible with loyalty-rewards core: `^1.1.1`
 

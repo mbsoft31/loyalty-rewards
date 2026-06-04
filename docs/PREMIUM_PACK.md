@@ -32,7 +32,7 @@ Example `composer.json` for the premium pack:
   "license": "Proprietary",
   "require": {
     "php": "^8.3",
-    "mbsoft31/loyalty-rewards": "^1.0"
+    "mbsoft31/loyalty-rewards": "^1.1.1"
   },
   "autoload": {"psr-4": {"LoyaltyRewards\\\\Premium\\\\": "src/"}}
 }
@@ -69,7 +69,7 @@ Example `composer.json` for the premium pack:
 - Provide installation snippet:
 ```json
 {
-  "require": {"mbsoft31/loyalty-rewards-premium": "^1.0"},
+  "require": {"mbsoft31/loyalty-rewards-premium": "^1.1.1"},
   "repositories": [{"type": "composer", "url": "https://<your-private-repo>"}]
 }
 ```
@@ -80,4 +80,3 @@ Example `composer.json` for the premium pack:
 - Expiry Policies (rolling windows, inactivity)
 - Webhooks & Exporters (CSV/S3/Kafka)
 - Analytics & Metrics (per‑rule effectiveness)
-
