@@ -48,6 +48,7 @@ abstract class DatabaseTestCase extends TestCase
 
         $this->createTables();
         $this->createIndexes();
+        $this->truncateAllTables();
         $this->seedTestData();
         $this->setupRepositories();
     }

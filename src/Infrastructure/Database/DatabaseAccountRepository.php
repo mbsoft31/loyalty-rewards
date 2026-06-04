@@ -174,13 +174,16 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
     {
         $sql = '
             SELECT * FROM loyalty_accounts 
-            WHERE last_activity_at < :since 
-               OR (last_activity_at IS NULL AND created_at < :since)
+            WHERE last_activity_at < :since_or 
+               OR (last_activity_at IS NULL AND created_at < :created_since)
             ORDER BY last_activity_at ASC
         ';
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['since' => $since->format('Y-m-d H:i:s')]);
+        $stmt->execute([
+            'since_or' => $since->format('Y-m-d H:i:s'),
+            'created_since' => $since->format('Y-m-d H:i:s'),
+        ]);
 
         $accounts = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
