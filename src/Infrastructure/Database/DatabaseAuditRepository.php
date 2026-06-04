@@ -12,6 +12,7 @@ use LoyaltyRewards\Domain\ValueObjects\AccountId;
 use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 use PDO;
+use Ramsey\Uuid\Uuid;
 
 readonly class DatabaseAuditRepository implements AuditRepositoryInterface
 {
@@ -21,16 +22,18 @@ readonly class DatabaseAuditRepository implements AuditRepositoryInterface
     {
         $sql = '
             INSERT INTO audit_logs (
+                id,
                 entity_type, entity_id, action, user_id, data, 
                 ip_address, user_agent, created_at
             ) VALUES (
-                :entity_type, :entity_id, :action, :user_id, :data,
+                :id, :entity_type, :entity_id, :action, :user_id, :data,
                 :ip_address, :user_agent, :created_at
             )
         ';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
+            'id' => Uuid::uuid4()->toString(),
             'entity_type' => $record->entityType,
             'entity_id' => $record->entityId,
             'action' => $record->action,
