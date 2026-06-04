@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Infrastructure\Database;
 
-use DateMalformedStringException;
 use DateTimeImmutable;
 use Exception;
 use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
 use LoyaltyRewards\Domain\Enums\AccountStatus;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
 use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId, Points};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\Points;
 use PDO;
 
 readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 {
     public function __construct(
-        private PDO                           $pdo,
+        private PDO $pdo,
         private DatabaseTransactionRepository $transactionRepository
-    ) {
-    }
+    ) {}
 
     public function findById(AccountId $id): LoyaltyAccount
     {
@@ -30,7 +30,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row) {
+        if (! $row) {
             throw new AccountNotFoundException("Account not found: {$id}");
         }
 
@@ -45,20 +45,24 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row) {
+        if (! $row) {
             throw new AccountNotFoundException("Account not found for customer: {$customerId}");
         }
 
         return $this->mapRowToAccount($row);
     }
 
+    /**
+     * @param  list<CustomerId>  $customerIds
+     * @return list<LoyaltyAccount>
+     */
     public function findByCustomerIds(array $customerIds): array
     {
         if (empty($customerIds)) {
             return [];
         }
 
-        $placeholders = str_repeat('?,', count($customerIds) - 1) . '?';
+        $placeholders = str_repeat('?,', count($customerIds) - 1).'?';
         $sql = "SELECT * FROM loyalty_accounts WHERE customer_id IN ({$placeholders}) ORDER BY created_at";
 
         $stmt = $this->pdo->prepare($sql);
@@ -151,7 +155,7 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
             }
         }
 
-        if (!empty($transactions)) {
+        if (! empty($transactions)) {
             $this->transactionRepository->saveMany($transactions);
         }
     }
@@ -163,6 +167,9 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
         $stmt->execute(['id' => $id->toString()]);
     }
 
+    /**
+     * @return list<LoyaltyAccount>
+     */
     public function findInactive(DateTimeImmutable $since): array
     {
         $sql = '
@@ -183,6 +190,9 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
         return $accounts;
     }
 
+    /**
+     * @return list<LoyaltyAccount>
+     */
     public function findWithPendingPoints(): array
     {
         $sql = 'SELECT * FROM loyalty_accounts WHERE pending_points > 0 ORDER BY created_at';
@@ -223,6 +233,8 @@ readonly class DatabaseAccountRepository implements AccountRepositoryInterface
     }
 
     /**
+     * @param  array<string, mixed>  $row
+     *
      * @throws Exception
      */
     private function mapRowToAccount(array $row): LoyaltyAccount

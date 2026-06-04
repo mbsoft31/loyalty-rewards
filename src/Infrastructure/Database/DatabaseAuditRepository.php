@@ -8,15 +8,14 @@ use DateMalformedStringException;
 use DateTimeImmutable;
 use Exception;
 use LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 use PDO;
 
 readonly class DatabaseAuditRepository implements AuditRepositoryInterface
 {
-    public function __construct(private PDO $pdo)
-    {
-    }
+    public function __construct(private PDO $pdo) {}
 
     public function store(AuditRecord $record): void
     {
@@ -43,6 +42,9 @@ readonly class DatabaseAuditRepository implements AuditRepositoryInterface
         ]);
     }
 
+    /**
+     * @param  list<AuditRecord>  $records
+     */
     public function storeMany(array $records): void
     {
         if (empty($records)) {
@@ -62,6 +64,9 @@ readonly class DatabaseAuditRepository implements AuditRepositoryInterface
         }
     }
 
+    /**
+     * @return list<AuditRecord>
+     */
     public function findByAccount(AccountId $accountId, int $limit = 100): array
     {
         $sql = "
@@ -79,6 +84,9 @@ readonly class DatabaseAuditRepository implements AuditRepositoryInterface
         return $this->mapRowsToRecords($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * @return list<AuditRecord>
+     */
     public function findByCustomer(CustomerId $customerId, int $limit = 100): array
     {
         $sql = "
@@ -96,6 +104,9 @@ readonly class DatabaseAuditRepository implements AuditRepositoryInterface
         return $this->mapRowsToRecords($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * @return list<AuditRecord>
+     */
     public function findByDateRange(
         DateTimeImmutable $from,
         DateTimeImmutable $to,
@@ -117,6 +128,9 @@ readonly class DatabaseAuditRepository implements AuditRepositoryInterface
         return $this->mapRowsToRecords($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * @return list<AuditRecord>
+     */
     public function findByAction(string $action, int $limit = 100): array
     {
         $sql = '
@@ -143,12 +157,18 @@ readonly class DatabaseAuditRepository implements AuditRepositoryInterface
         return $stmt->rowCount();
     }
 
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<AuditRecord>
+     */
     private function mapRowsToRecords(array $rows): array
     {
         return array_map(fn ($row) => $this->mapRowToRecord($row), $rows);
     }
 
     /**
+     * @param  array<string, mixed>  $row
+     *
      * @throws DateMalformedStringException|Exception
      */
     private function mapRowToRecord(array $row): AuditRecord

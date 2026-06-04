@@ -1,15 +1,19 @@
 <?php
 
 use LoyaltyRewards\Core\Services\AuditService;
+use LoyaltyRewards\Core\Services\FraudDetection\FraudResult;
 use LoyaltyRewards\Domain\Repositories\AuditRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Tests\Support\Factories;
 use Psr\Log\NullLogger;
 
 describe('AuditService', function () {
     beforeEach(function () {
         $this->repo = mock(AuditRepositoryInterface::class);
-        $this->service = new AuditService($this->repo, new NullLogger());
+        $this->service = new AuditService($this->repo, new NullLogger);
         $this->account = Factories::loyaltyAccount();
         $this->transaction = Factories::pointsTransaction($this->account->getId());
     });
@@ -47,7 +51,7 @@ describe('AuditService', function () {
         $this->repo->shouldReceive('store')->once();
         $amount = Money::fromDollars(5000.0, Currency::USD());
         $ctx = TransactionContext::create(['recent_total_amount' => 12000.0]);
-        $fraud = new LoyaltyRewards\Core\Services\FraudDetection\FraudResult(0.9, ['test']);
+        $fraud = new FraudResult(0.9, ['test']);
         $this->service->logFraudAttempt($this->account, $amount, $ctx, $fraud);
         expect(true)->toBeTrue();
     });

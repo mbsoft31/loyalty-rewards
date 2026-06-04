@@ -8,11 +8,12 @@ on:
 
 jobs:
   test:
+    name: PHP ${{ matrix.php-version }} Core
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        php-version: ['8.2', '8.3', '8.4']
+        php-version: ['8.3', '8.4', '8.5']
 
     steps:
       - uses: actions/checkout@v4
@@ -27,24 +28,112 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Run PHPStan (non-blocking)
-        continue-on-error: true
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Run PHPStan
         run: composer stan
 
-      - name: Run code style check (non-blocking)
-        continue-on-error: true
+      - name: Run code style check
         run: composer lint
 
       - name: Run tests
         run: composer test
 
       - name: Run tests with coverage
-        if: matrix.php-version == '8.2'
+        if: matrix.php-version == '8.3'
         run: composer test:clover
 
       - name: Enforce coverage >= 80%
-        if: matrix.php-version == '8.2'
+        if: matrix.php-version == '8.3'
         run: |
           php -r '$x=simplexml_load_file("coverage.xml"); $m=$x->project->metrics; $covered=(int)$m["coveredstatements"]; $total=max(1,(int)$m["statements"]); $pct=($covered/$total)*100; echo "Coverage: ".round($pct,2)."%\n"; if($pct<80){fwrite(STDERR, "Coverage ".round($pct,2)."% below threshold (80%)\n"); exit(1);} else { echo "OK: coverage threshold met.\n"; }'
 
-  # DB integration tests temporarily disabled
+  integration-mysql:
+    name: MySQL Integration
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: loyalty_test
+          MYSQL_USER: loyalty_user
+          MYSQL_PASSWORD: loyalty_secret
+          MYSQL_ROOT_PASSWORD: loyalty_root_secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root --password=loyalty_root_secret"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, pdo, pdo_mysql
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Run database integration tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: loyalty_test
+          DB_USERNAME: loyalty_user
+          DB_PASSWORD: loyalty_secret
+        run: composer test:integration
+
+  integration-postgresql:
+    name: PostgreSQL Integration
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: loyalty_test
+          POSTGRES_USER: loyalty_user
+          POSTGRES_PASSWORD: loyalty_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -h 127.0.0.1 -U loyalty_user -d loyalty_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, pdo, pdo_pgsql
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Run database integration tests
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: loyalty_test
+          DB_USERNAME: loyalty_user
+          DB_PASSWORD: loyalty_secret
+        run: composer test:integration

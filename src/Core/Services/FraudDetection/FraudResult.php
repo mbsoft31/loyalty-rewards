@@ -8,23 +8,32 @@ use JsonSerializable;
 
 final readonly class FraudResult implements JsonSerializable
 {
+    /**
+     * @param  list<string>  $reasons
+     * @param  list<FraudResult>  $detectorResults
+     */
     public function __construct(
         private float $score,
         private array $reasons = [],
         private array $detectorResults = []
-    ) {
-    }
+    ) {}
 
     public function getScore(): float
     {
         return $this->score;
     }
 
+    /**
+     * @return list<string>
+     */
     public function getReasons(): array
     {
         return $this->reasons;
     }
 
+    /**
+     * @return list<FraudResult>
+     */
     public function getDetectorResults(): array
     {
         return $this->detectorResults;
@@ -50,6 +59,15 @@ final readonly class FraudResult implements JsonSerializable
         };
     }
 
+    /**
+     * @return array{
+     *     score: float,
+     *     reasons: list<string>,
+     *     risk_level: string,
+     *     suspicious: bool,
+     *     should_block: bool
+     * }
+     */
     public function toArray(): array
     {
         return [
@@ -61,6 +79,15 @@ final readonly class FraudResult implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array{
+     *     score: float,
+     *     reasons: list<string>,
+     *     risk_level: string,
+     *     suspicious: bool,
+     *     should_block: bool
+     * }
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();

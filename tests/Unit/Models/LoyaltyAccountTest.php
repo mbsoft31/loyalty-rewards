@@ -1,11 +1,15 @@
 <?php
 
-use LoyaltyRewards\Core\Exceptions\{InactiveAccountException, InsufficientPointsException};
+use LoyaltyRewards\Core\Exceptions\InactiveAccountException;
+use LoyaltyRewards\Core\Exceptions\InsufficientPointsException;
 use LoyaltyRewards\Domain\Enums\TransactionType;
-use LoyaltyRewards\Domain\Events\{AccountCreatedEvent, PointsEarnedEvent, PointsRedeemedEvent};
+use LoyaltyRewards\Domain\Events\AccountCreatedEvent;
+use LoyaltyRewards\Domain\Events\PointsEarnedEvent;
+use LoyaltyRewards\Domain\Events\PointsRedeemedEvent;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
 use LoyaltyRewards\Domain\Models\PointsTransaction;
-use LoyaltyRewards\Domain\ValueObjects\{Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Tests\Support\Factories;
 
 describe('LoyaltyAccount Model', function () {
@@ -99,7 +103,7 @@ describe('LoyaltyAccount Model', function () {
         $context = TransactionContext::create([
             'reason' => 'Point correction',
             'type' => 'negative_adjustment',
-            'adjustment_amount' => -$adjustmentAmount
+            'adjustment_amount' => -$adjustmentAmount,
         ]);
 
         // For testing, we'll create a positive Points value but handle it as negative

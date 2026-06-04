@@ -10,22 +10,19 @@ use Throwable;
 abstract class LoyaltyException extends Exception
 {
     /**
-     * @param string $message
-     * @param int $code
-     * @param Throwable|null $previous
-     * @param array $context
+     * @param  array<string, mixed>  $context
      */
     public function __construct(
-        string          $message = '',
-        int             $code = 0,
-        ?Throwable      $previous = null,
+        string $message = '',
+        int $code = 0,
+        ?Throwable $previous = null,
         protected array $context = []
     ) {
         parent::__construct($message, $code, $previous);
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getContext(): array
     {

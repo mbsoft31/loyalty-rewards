@@ -9,14 +9,16 @@ use Exception;
 use LoyaltyRewards\Domain\Enums\TransactionType;
 use LoyaltyRewards\Domain\Models\PointsTransaction;
 use LoyaltyRewards\Domain\Repositories\TransactionRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId, Points, TransactionContext, TransactionId};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
+use LoyaltyRewards\Domain\ValueObjects\TransactionId;
 use PDO;
 
 readonly class DatabaseTransactionRepository implements TransactionRepositoryInterface
 {
-    public function __construct(private PDO $pdo)
-    {
-    }
+    public function __construct(private PDO $pdo) {}
 
     public function findById(TransactionId $id): ?PointsTransaction
     {
@@ -29,6 +31,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         return $row ? $this->mapRowToTransaction($row) : null;
     }
 
+    /**
+     * @return list<PointsTransaction>
+     */
     public function findByAccountId(AccountId $accountId, int $limit = 100): array
     {
         $sql = '
@@ -51,6 +56,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         return $transactions;
     }
 
+    /**
+     * @return list<PointsTransaction>
+     */
     public function findByCustomerId(CustomerId $customerId, int $limit = 100): array
     {
         $sql = '
@@ -74,6 +82,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         return $transactions;
     }
 
+    /**
+     * @return list<PointsTransaction>
+     */
     public function findByType(TransactionType $type, int $limit = 100): array
     {
         $sql = '
@@ -96,6 +107,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         return $transactions;
     }
 
+    /**
+     * @return list<PointsTransaction>
+     */
     public function findByDateRange(
         DateTimeImmutable $from,
         DateTimeImmutable $to,
@@ -122,6 +136,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         return $transactions;
     }
 
+    /**
+     * @return list<PointsTransaction>
+     */
     public function findByAccountAndDateRange(
         AccountId $accountId,
         DateTimeImmutable $from,
@@ -188,6 +205,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         ]);
     }
 
+    /**
+     * @param  list<PointsTransaction>  $transactions
+     */
     public function saveMany(array $transactions): void
     {
         if (empty($transactions)) {
@@ -207,6 +227,9 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
         }
     }
 
+    /**
+     * @return list<PointsTransaction>
+     */
     public function findPendingTransactions(): array
     {
         $sql = 'SELECT * FROM points_transactions WHERE processed_at IS NULL ORDER BY created_at';
@@ -246,8 +269,8 @@ readonly class DatabaseTransactionRepository implements TransactionRepositoryInt
     }
 
     /**
-     * @param array $row
-     * @return PointsTransaction
+     * @param  array<string, mixed>  $row
+     *
      * @throws Exception
      */
     private function mapRowToTransaction(array $row): PointsTransaction

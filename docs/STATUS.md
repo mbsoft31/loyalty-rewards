@@ -3,11 +3,12 @@
 This document captures the current state of the project and a pragmatic monetization plan so future development can proceed with clarity.
 
 ## Snapshot
-- Tests: 117 passing, 342 assertions (composer test)
-- Coverage: 81.63% (composer test:clover → coverage.xml)
+- Tests: unit, feature, and integration suites now include a real database integration path for SQLite, MySQL, and PostgreSQL in CI.
+- Quality gate: `composer ci` passes Composer validation, Pint, PHPStan level 7, Pest, and Composer audit.
+- Coverage: `composer test:clover` writes ignored `coverage.xml`; CI installs Xdebug and enforces >=80% on PHP 8.3.
 - Core: Production‑grade DDD design, strict types, rules engine, fraud detection primitives, audit logging.
 - Laravel Adapter: Service provider, config publish, loadMigrationsFrom, Schema migrations, config‑driven rule bootstrapper.
-- Docs: README aligned to PHP ^8.2; CONFIGURATION.md filled; API.md has “Getting Started”; PREMIUM_PACK planning doc present.
+- Docs: README aligned to PHP ^8.3; CONFIGURATION.md filled; API.md has “Getting Started”; PREMIUM_PACK planning doc present.
 
 ## Recent Changes
 - Coverage uplift to >80% via new tests:
@@ -33,14 +34,14 @@ This document captures the current state of the project and a pragmatic monetiza
 - Premium pack skeleton added under `packages/loyalty-rewards-premium` (Advanced Promotions & Tiers) — ready for private Composer distribution.
 
 ## Gaps To Close (Short Term)
-- CI matrix: Add Postgres/MySQL services in `.github/workflows/tests.yml`. Run integration subsets with DB env (DatabaseTestCase is driver‑aware).
-- Code quality gates: Add PHPStan (level 7/8) + formatter (Pint/php‑cs‑fixer). Coverage gate (≥80%) already wired; keep threshold and upload artifact.
+- CI matrix: PostgreSQL and MySQL integration jobs added in `.github/workflows/tests.yml`; integration suites run against both backends.
+- Code quality gates: DONE for the core package. PHPStan level 7, Pint, Pest, Composer validation, and Composer audit are blocking in `composer ci` and CI.
 - Packaging polish: Root README “Laravel Adapter” badge/section in place; publish core + adapter to Packagist and add Packagist badges.
 
 ## Prioritized Next Steps
 1) Multi‑DB testability (DatabaseTestCase driver‑aware) — DONE
-2) CI DB matrix (Pg + MySQL jobs with env)
-3) PHPStan + formatter + coverage gate — PHPStan + CS Fixer added (non‑blocking in CI); coverage gate (≥80%) enabled
+2) CI DB matrix (Pg + MySQL jobs with env) — DONE
+3) PHPStan + formatter + coverage gate — DONE with PHPStan 2 level 7, Pint, blocking CI checks, and ≥80% coverage gate
 4) Packagist publish (core + adapter) and badges
 5) Laravel adapter README + example config‑driven rules — DONE
 6) Premium pack initial release (Advanced Promotions & Tiers) via private Composer repo — skeleton added

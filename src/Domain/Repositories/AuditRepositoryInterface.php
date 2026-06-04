@@ -5,27 +5,31 @@ declare(strict_types=1);
 namespace LoyaltyRewards\Domain\Repositories;
 
 use DateTimeImmutable;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
 
 interface AuditRepositoryInterface
 {
     public function store(AuditRecord $record): void;
 
+    /**
+     * @param  list<AuditRecord>  $records
+     */
     public function storeMany(array $records): void;
 
     /**
-     * @return AuditRecord[]
+     * @return list<AuditRecord>
      */
     public function findByAccount(AccountId $accountId, int $limit = 100): array;
 
     /**
-     * @return AuditRecord[]
+     * @return list<AuditRecord>
      */
     public function findByCustomer(CustomerId $customerId, int $limit = 100): array;
 
     /**
-     * @return AuditRecord[]
+     * @return list<AuditRecord>
      */
     public function findByDateRange(
         DateTimeImmutable $from,
@@ -34,7 +38,7 @@ interface AuditRepositoryInterface
     ): array;
 
     /**
-     * @return AuditRecord[]
+     * @return list<AuditRecord>
      */
     public function findByAction(string $action, int $limit = 100): array;
 

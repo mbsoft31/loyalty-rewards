@@ -7,29 +7,31 @@ namespace LoyaltyRewards\Domain\Repositories;
 use DateTimeImmutable;
 use LoyaltyRewards\Domain\Enums\TransactionType;
 use LoyaltyRewards\Domain\Models\PointsTransaction;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId, TransactionId};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\TransactionId;
 
 interface TransactionRepositoryInterface
 {
     public function findById(TransactionId $id): ?PointsTransaction;
 
     /**
-     * @return PointsTransaction[]
+     * @return list<PointsTransaction>
      */
     public function findByAccountId(AccountId $accountId, int $limit = 100): array;
 
     /**
-     * @return PointsTransaction[]
+     * @return list<PointsTransaction>
      */
     public function findByCustomerId(CustomerId $customerId, int $limit = 100): array;
 
     /**
-     * @return PointsTransaction[]
+     * @return list<PointsTransaction>
      */
     public function findByType(TransactionType $type, int $limit = 100): array;
 
     /**
-     * @return PointsTransaction[]
+     * @return list<PointsTransaction>
      */
     public function findByDateRange(
         DateTimeImmutable $from,
@@ -38,7 +40,7 @@ interface TransactionRepositoryInterface
     ): array;
 
     /**
-     * @return PointsTransaction[]
+     * @return list<PointsTransaction>
      */
     public function findByAccountAndDateRange(
         AccountId $accountId,
@@ -49,10 +51,13 @@ interface TransactionRepositoryInterface
 
     public function save(PointsTransaction $transaction): void;
 
+    /**
+     * @param  list<PointsTransaction>  $transactions
+     */
     public function saveMany(array $transactions): void;
 
     /**
-     * @return PointsTransaction[]
+     * @return list<PointsTransaction>
      */
     public function findPendingTransactions(): array;
 

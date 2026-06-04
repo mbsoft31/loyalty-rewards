@@ -7,6 +7,7 @@ namespace LoyaltyRewards\Tests\Support;
 abstract class PerformanceTestCase extends DatabaseTestCase
 {
     protected BenchmarkRunner $benchmark;
+
     protected array $performanceMetrics = [];
 
     // Performance thresholds (can be adjusted based on requirements)
@@ -20,7 +21,7 @@ abstract class PerformanceTestCase extends DatabaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->benchmark = new BenchmarkRunner();
+        $this->benchmark = new BenchmarkRunner;
 
         // Enable more detailed memory tracking
         if (function_exists('memory_get_peak_usage')) {
@@ -31,7 +32,7 @@ abstract class PerformanceTestCase extends DatabaseTestCase
     protected function tearDown(): void
     {
         // Log performance metrics
-        if (!empty($this->performanceMetrics)) {
+        if (! empty($this->performanceMetrics)) {
             $this->logPerformanceMetrics();
         }
 
@@ -67,10 +68,10 @@ abstract class PerformanceTestCase extends DatabaseTestCase
 
     protected function logPerformanceMetrics(): void
     {
-        $logFile = __DIR__ . '/../../storage/logs/performance.log';
+        $logFile = __DIR__.'/../../storage/logs/performance.log';
         $logDir = dirname($logFile);
 
-        if (!is_dir($logDir)) {
+        if (! is_dir($logDir)) {
             mkdir($logDir, 0755, true);
         }
 
@@ -83,6 +84,6 @@ abstract class PerformanceTestCase extends DatabaseTestCase
             'metrics' => $this->performanceMetrics,
         ];
 
-        file_put_contents($logFile, json_encode($logEntry) . "\n", FILE_APPEND | LOCK_EX);
+        file_put_contents($logFile, json_encode($logEntry)."\n", FILE_APPEND | LOCK_EX);
     }
 }

@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Rules\Redemption;
 
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Rules\Contracts\RedemptionRuleInterface;
 
 readonly class BasicRedemptionRule implements RedemptionRuleInterface
 {
     public function __construct(
         private Currency $currency,
-        private int      $pointsPerDollar = 100, // 100 points = $1
-        private int      $minimumPoints = 100
-    ) {
-    }
+        private int $pointsPerDollar = 100, // 100 points = $1
+        private int $minimumPoints = 100
+    ) {}
 
     public function calculateRedemptionValue(Points $points, TransactionContext $context): Money
     {
         $dollars = $points->value() / $this->pointsPerDollar;
+
         return Money::fromDollars($dollars, $this->currency);
     }
 

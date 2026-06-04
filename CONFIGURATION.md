@@ -3,7 +3,7 @@
 This guide covers environment setup, database configuration, and wiring the service with rules.
 
 ## Requirements
-- PHP 8.2+ with `pdo` (and `pdo_sqlite` for tests)
+- PHP 8.3+ with `pdo` (and `pdo_sqlite` for tests)
 - Composer 2.5+
 - Optional: Xdebug for coverage, Pest for tests
 

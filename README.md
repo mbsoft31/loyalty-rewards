@@ -1,7 +1,7 @@
 # 🎯 Loyalty Rewards System
 
 [![Tests](https://github.com/mbsoft31/loyalty-rewards/actions/workflows/tests.yml/badge.svg)](https://github.com/mbsoft31/loyalty-rewards/actions/workflows/tests.yml)
-[![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue)](https://php.net)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.3-blue)](https://php.net)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Latest Version](https://img.shields.io/github/v/release/mbsoft31/loyalty-rewards)](https://github.com/mbsoft31/loyalty-rewards/releases)
 [![Laravel Adapter](https://img.shields.io/badge/Laravel-Adapter-blueviolet)](packages/loyalty-rewards-laravel)
@@ -14,9 +14,9 @@ A comprehensive, enterprise-grade loyalty rewards system for PHP applications. B
 - 🛡️ Built-in Fraud Detection — Velocity checks, amount validation, suspicious activity alerts
 - 📊 Complete Audit Trail — Full transaction logging with compliance support
 - ⚡ High Performance — Handles 1000+ transactions/second with optimized database queries
-- 🧪 100% Test Coverage — Comprehensive test suite with unit, integration, and performance tests
+- 🧪 Comprehensive Test Suite — Unit, feature, integration, and coverage-gated CI checks
 - 🔧 Framework Agnostic — Works with Laravel, Symfony, or standalone PHP applications
-- 💎 Type Safe — Full PHP 8.2+ type declarations with strict type checking
+- 💎 Type Safe — Full PHP 8.3+ type declarations with strict type checking
 
 ## 🚀 Quick Start
 
@@ -27,21 +27,59 @@ composer require mbsoft31/loyalty-rewards
 ### Basic Usage
 
 ```php
-use LoyaltyRewards\Core\Services\LoyaltyService;
-use LoyaltyRewards\Domain\ValueObjects\{CustomerId, Money, Currency, TransactionContext};
-use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
+declare(strict_types=1);
 
-// Setup
-$loyaltyService = new LoyaltyService(/* dependencies */);
+use LoyaltyRewards\Core\Services\LoyaltyService;
+use LoyaltyRewards\Core\Services\AuditService;
+use LoyaltyRewards\Core\Services\FraudDetectionService;
+use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, CustomerId, Money, Points, TransactionContext};
+use LoyaltyRewards\Infrastructure\Database\DatabaseAccountRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseAuditRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseConnectionFactory;
+use LoyaltyRewards\Infrastructure\Database\DatabaseTransactionRepository;
+use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
+use LoyaltyRewards\Rules\Earning\TierBonusRule;
+use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\NullLogger;
+
+$pdo = DatabaseConnectionFactory::create([
+    'driver' => 'mysql',
+    'host' => 'localhost',
+    'database' => 'loyalty_rewards',
+    'username' => 'your_user',
+    'password' => 'your_password',
+]);
+
+$accountRepository = new DatabaseAccountRepository(
+    $pdo,
+    new DatabaseTransactionRepository($pdo)
+);
+$auditRepository = new DatabaseAuditRepository($pdo);
+
+$rulesEngine = new RulesEngine(new NullLogger);
+$rulesEngine->addEarningRule(new CategoryMultiplierRule('electronics', 2.0, ConversionRate::standard()));
+$rulesEngine->addEarningRule(new TierBonusRule('gold', 1.25, ConversionRate::standard()));
+$rulesEngine->addRedemptionRule(new BasicRedemptionRule(Currency::USD(), 100, 100));
+
+$loyaltyService = new LoyaltyService(
+    $accountRepository,
+    $rulesEngine,
+    new FraudDetectionService(new NullLogger),
+    new AuditService($auditRepository, new NullLogger),
+    new class implements EventDispatcherInterface {
+        public function dispatch(object $event): object
+        {
+            return $event;
+        }
+    },
+    new NullLogger
+);
 
 // Create customer account
 $customerId = CustomerId::fromString('customer_12345');
 $account = $loyaltyService->createAccount($customerId);
-
-// Configure earning rules
-$rulesEngine->addEarningRule(
-    new CategoryMultiplierRule('electronics', 2.0, ConversionRate::standard())
-);
 
 // Earn points from purchase
 $result = $loyaltyService->earnPoints(
@@ -49,14 +87,17 @@ $result = $loyaltyService->earnPoints(
     Money::fromDollars(99.99, Currency::USD()),
     TransactionContext::earning('electronics', 'online_store')
 );
+$loyaltyService->confirmPendingPoints($customerId);
+$availableBalance = $loyaltyService->getAccountBalance($customerId);
 
-echo "Earned: {$result->pointsEarned->value()} points";
-echo "Balance: {$result->newAvailableBalance->value()} points";
+echo "Earned: {$result->pointsEarned->value()} points\n";
+echo "Balance (available): {$availableBalance->value()} points\n";
 
 // Redeem points
 $redemption = $loyaltyService->redeemPoints(
     $customerId,
-    Points::fromInt(1000)
+    Points::fromInt(1000),
+    TransactionContext::redemption(['channel' => 'store'])
 );
 
 echo "Redeemed: {$redemption->redemptionValue} value";
@@ -90,14 +131,17 @@ loyalty-rewards/
 ### E-commerce Rewards Program
 
 ```php
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
+use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, TierBonusRule};
+
 // Setup category-based earning
-$rulesEngine->addEarningRule(new CategoryMultiplierRule('electronics', 3.0));
-$rulesEngine->addEarningRule(new CategoryMultiplierRule('books', 2.0));
-$rulesEngine->addEarningRule(new CategoryMultiplierRule('groceries', 1.5));
+$rulesEngine->addEarningRule(new CategoryMultiplierRule('electronics', 3.0, ConversionRate::standard()));
+$rulesEngine->addEarningRule(new CategoryMultiplierRule('books', 2.0, ConversionRate::standard()));
+$rulesEngine->addEarningRule(new CategoryMultiplierRule('groceries', 1.5, ConversionRate::standard()));
 
 // Tier-based bonuses
-$rulesEngine->addEarningRule(new TierBonusRule('gold', 1.25));
-$rulesEngine->addEarningRule(new TierBonusRule('platinum', 1.5));
+$rulesEngine->addEarningRule(new TierBonusRule('gold', 1.25, ConversionRate::standard()));
+$rulesEngine->addEarningRule(new TierBonusRule('platinum', 1.5, ConversionRate::standard()));
 
 // Customer purchases $200 laptop (electronics + gold tier)
 $result = $loyaltyService->earnPoints(
@@ -106,8 +150,14 @@ $result = $loyaltyService->earnPoints(
     TransactionContext::earning('electronics')
 );
 // Earns: 200 * 100 * 3.0 * 1.25 = 75,000 points
+```
 
 ### Restaurant Chain Program
+
+```php
+use DateTimeImmutable;
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
+use LoyaltyRewards\Rules\Earning\TimeBasedRule;
 
 // Happy hour promotions
 $happyHourRule = new TimeBasedRule(
@@ -127,8 +177,12 @@ $result = $loyaltyService->earnPoints(
     TransactionContext::earning('food', 'mobile_app')
 );
 // Earns: 12.50 * 100 * 2.0 = 2,500 points
+```
 
 ### SaaS Referral Program
+
+```php
+use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, TransactionContext};
 
 // Referral bonus
 $result = $loyaltyService->earnPoints(
@@ -162,14 +216,43 @@ $pdo = DatabaseConnectionFactory::create([
 
 ```php
 use LoyaltyRewards\Core\Services\LoyaltyService;
-use LoyaltyRewards\Infrastructure\Repositories\{AccountRepository, TransactionRepository};
-use LoyaltyRewards\Infrastructure\Audit\AuditLogger;
+use LoyaltyRewards\Core\Services\AuditService;
+use LoyaltyRewards\Core\Services\FraudDetectionService;
+use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Infrastructure\Database\DatabaseAccountRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseAuditRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseConnectionFactory;
+use LoyaltyRewards\Infrastructure\Database\DatabaseTransactionRepository;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\NullLogger;
 
-$accountRepo = new AccountRepository($pdo);
-$transactionRepo = new TransactionRepository($pdo);
-$auditLogger = new AuditLogger($pdo);
+$pdo = DatabaseConnectionFactory::create([
+    'driver' => 'pgsql',
+    'host' => 'localhost',
+    'database' => 'loyalty_rewards',
+    'username' => 'your_user',
+    'password' => 'your_password',
+]);
 
-$loyaltyService = new LoyaltyService($accountRepo, $transactionRepo, $auditLogger, $rulesEngine);
+$accountRepository = new DatabaseAccountRepository(
+    $pdo,
+    new DatabaseTransactionRepository($pdo)
+);
+$auditRepository = new DatabaseAuditRepository($pdo);
+
+$loyaltyService = new LoyaltyService(
+    $accountRepository,
+    new RulesEngine(new NullLogger),
+    new FraudDetectionService(new NullLogger),
+    new AuditService($auditRepository, new NullLogger),
+    new class implements EventDispatcherInterface {
+        public function dispatch(object $event): object
+        {
+            return $event;
+        }
+    },
+    new NullLogger
+);
 ```
 
 
@@ -177,6 +260,7 @@ $loyaltyService = new LoyaltyService($accountRepo, $transactionRepo, $auditLogge
 
 ```php
 use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
 use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, TierBonusRule};
 
 $rulesEngine = new RulesEngine();
@@ -199,7 +283,7 @@ $rulesEngine->addEarningRule(
 
 ## 🧪 Testing
 
-The package includes comprehensive tests with 100% coverage:
+The package includes comprehensive tests with a CI coverage gate:
 
 # Run all tests
 
@@ -212,6 +296,7 @@ composer test
 ```bash
 composer test:unit
 composer test:feature
+composer test:integration
 ```
 
 # Run with coverage report
@@ -227,10 +312,9 @@ composer test:coverage
 ```
 
 ### Test Results
-- 71 tests passing
-- 209 assertions
+- Full suite includes unit, feature, and integration tests
 - Unit tests: Value objects, domain models, rules engine
-- Integration tests: Database operations, service workflows
+- Integration tests: Database operations, repository behavior, full service workflows
 - Performance tests: High-volume transactions, memory efficiency
 
 ## 🔒 Security & Fraud Detection
@@ -312,7 +396,7 @@ git push origin v0.1.0
 # adapter:  https://packagist.org/packages/mbsoft31/loyalty-rewards-laravel
 ```
 
-CI runs unit + integration tests and a DB matrix (Postgres 16, MySQL 8). Coverage gate enforces ≥80% on PHP 8.2.
+CI runs unit + integration tests on PHP 8.3, 8.4, and 8.5. Coverage gate enforces ≥80% on PHP 8.3.
 
 ## 🤝 Contributing
 

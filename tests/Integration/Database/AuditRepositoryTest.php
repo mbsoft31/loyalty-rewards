@@ -1,8 +1,9 @@
 <?php
 
-use LoyaltyRewards\Tests\Support\DatabaseTestCase;
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 use LoyaltyRewards\Infrastructure\Audit\AuditRecord;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use LoyaltyRewards\Tests\Support\DatabaseTestCase;
 
 describe('Database Audit Repository Integration', function () {
     it('persists records and finds by action', function () {
@@ -25,19 +26,19 @@ describe('Database Audit Repository Integration', function () {
         $this->auditRepository->storeMany([$older, $newer]);
 
         // backdate the redeemed record by action
-        $twoDaysAgo = (new DateTimeImmutable())->modify('-2 days')->format('Y-m-d H:i:s');
+        $twoDaysAgo = (new DateTimeImmutable)->modify('-2 days')->format('Y-m-d H:i:s');
         $this->pdo->exec("UPDATE audit_logs SET created_at = '{$twoDaysAgo}' WHERE action = 'points_redeemed'");
 
         $byAccount = $this->auditRepository->findByAccount($accountId, 10);
         expect($byAccount)->toHaveCount(2);
 
-        $from = (new DateTimeImmutable())->modify('-1 day');
-        $to = new DateTimeImmutable();
+        $from = (new DateTimeImmutable)->modify('-1 day');
+        $to = new DateTimeImmutable;
         $within = $this->auditRepository->findByDateRange($from, $to, 10);
         expect($within)->not->toBeEmpty();
 
         // delete older than 1 day
-        $deleted = $this->auditRepository->deleteOlderThan((new DateTimeImmutable())->modify('-1 day'));
+        $deleted = $this->auditRepository->deleteOlderThan((new DateTimeImmutable)->modify('-1 day'));
         expect($deleted)->toBeGreaterThanOrEqual(1);
     });
 
@@ -50,4 +51,3 @@ describe('Database Audit Repository Integration', function () {
         expect($rows[0]->action)->toBe('profile_updated');
     });
 })->uses(DatabaseTestCase::class);
-

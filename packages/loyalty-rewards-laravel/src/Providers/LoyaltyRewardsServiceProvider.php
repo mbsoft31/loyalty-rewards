@@ -6,11 +6,19 @@ namespace LoyaltyRewards\Laravel\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use LoyaltyRewards\Core\Engine\RulesEngine;
-use LoyaltyRewards\Core\Services\{AuditService, FraudDetectionService, LoyaltyService};
+use LoyaltyRewards\Core\Services\AuditService;
+use LoyaltyRewards\Core\Services\FraudDetectionService;
+use LoyaltyRewards\Core\Services\LoyaltyService;
 use LoyaltyRewards\Domain\Repositories\AccountRepositoryInterface;
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money};
-use LoyaltyRewards\Infrastructure\Database\{DatabaseAccountRepository, DatabaseAuditRepository, DatabaseConnectionFactory, DatabaseTransactionRepository};
-use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, MinimumSpendRule};
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Infrastructure\Database\DatabaseAccountRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseAuditRepository;
+use LoyaltyRewards\Infrastructure\Database\DatabaseConnectionFactory;
+use LoyaltyRewards\Infrastructure\Database\DatabaseTransactionRepository;
+use LoyaltyRewards\Rules\Earning\CategoryMultiplierRule;
+use LoyaltyRewards\Rules\Earning\MinimumSpendRule;
 use LoyaltyRewards\Rules\Redemption\BasicRedemptionRule;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\NullLogger;
@@ -19,11 +27,12 @@ final class LoyaltyRewardsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/loyalty-rewards.php', 'loyalty-rewards');
+        $this->mergeConfigFrom(__DIR__.'/../../config/loyalty-rewards.php', 'loyalty-rewards');
 
         // PDO connection for the package
         $this->app->singleton('loyalty-rewards.pdo', function () {
             $config = (array) config('loyalty-rewards.database', []);
+
             return DatabaseConnectionFactory::create($config);
         });
 
@@ -44,10 +53,10 @@ final class LoyaltyRewardsServiceProvider extends ServiceProvider
         });
 
         // Core services
-        $this->app->singleton(RulesEngine::class, fn () => new RulesEngine(new NullLogger()));
-        $this->app->singleton(FraudDetectionService::class, fn () => new FraudDetectionService(new NullLogger()));
+        $this->app->singleton(RulesEngine::class, fn () => new RulesEngine(new NullLogger));
+        $this->app->singleton(FraudDetectionService::class, fn () => new FraudDetectionService(new NullLogger));
         $this->app->singleton(AuditService::class, function ($app) {
-            return new AuditService($app->make(DatabaseAuditRepository::class), new NullLogger());
+            return new AuditService($app->make(DatabaseAuditRepository::class), new NullLogger);
         });
 
         // PSR-14 dispatcher fallback (no-op) if not bound
@@ -56,7 +65,8 @@ final class LoyaltyRewardsServiceProvider extends ServiceProvider
                 return $app->make(EventDispatcherInterface::class);
             }
 
-            return new class () implements EventDispatcherInterface {
+            return new class implements EventDispatcherInterface
+            {
                 public function dispatch(object $event): object
                 {
                     return $event;
@@ -71,19 +81,19 @@ final class LoyaltyRewardsServiceProvider extends ServiceProvider
                 $app->make(FraudDetectionService::class),
                 $app->make(AuditService::class),
                 $app->make('loyalty-rewards.dispatcher'),
-                new NullLogger()
+                new NullLogger
             );
         });
     }
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->publishes([
-            __DIR__ . '/../../database/migrations' => database_path('migrations'),
+            __DIR__.'/../../database/migrations' => database_path('migrations'),
         ], 'loyalty-rewards-migrations');
         $this->publishes([
-            __DIR__ . '/../../config/loyalty-rewards.php' => config_path('loyalty-rewards.php'),
+            __DIR__.'/../../config/loyalty-rewards.php' => config_path('loyalty-rewards.php'),
         ], 'loyalty-rewards-config');
 
         // Optional: bootstrap rules from config

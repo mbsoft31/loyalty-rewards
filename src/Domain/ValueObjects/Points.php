@@ -106,6 +106,6 @@ final readonly class Points implements JsonSerializable
 
     public function __toString(): string
     {
-        return number_format($this->value) . ' points';
+        return number_format($this->value).' points';
     }
 }

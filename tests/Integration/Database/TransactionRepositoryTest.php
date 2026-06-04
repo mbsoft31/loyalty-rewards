@@ -1,8 +1,8 @@
 <?php
 
+use LoyaltyRewards\Domain\Enums\TransactionType;
 use LoyaltyRewards\Tests\Support\DatabaseTestCase;
 use LoyaltyRewards\Tests\Support\Factories;
-use LoyaltyRewards\Domain\Enums\TransactionType;
 
 describe('Database Transaction Repository Integration', function () {
     it('persists and retrieves transactions correctly', function () {
@@ -81,10 +81,9 @@ describe('Database Transaction Repository Integration', function () {
         $this->accountRepository->save($account);
         $this->transactionRepository->save(Factories::pointsTransaction($account->getId()));
 
-        $from = (new DateTimeImmutable())->modify('-1 day');
-        $to = (new DateTimeImmutable())->modify('+1 day');
+        $from = (new DateTimeImmutable)->modify('-1 day');
+        $to = (new DateTimeImmutable)->modify('+1 day');
         $list = $this->transactionRepository->findByDateRange($from, $to);
         expect($list)->not->toBeEmpty();
     });
 })->uses(DatabaseTestCase::class);
-

@@ -1,6 +1,8 @@
 <?php
 
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money};
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
 
 describe('Money Value Object', function () {
     it('creates money from dollars', function () {

@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace LoyaltyRewards\Tests\Support;
 
 use DateTimeImmutable;
-use LoyaltyRewards\Domain\Enums\{AccountStatus, TransactionType};
-use LoyaltyRewards\Domain\Models\{LoyaltyAccount, PointsTransaction};
-use LoyaltyRewards\Domain\ValueObjects\{
-    AccountId,
-    Currency,
-    CustomerId,
-    Money,
-    Points,
-    TransactionContext,
-    TransactionId
-};
+use LoyaltyRewards\Domain\Enums\AccountStatus;
+use LoyaltyRewards\Domain\Enums\TransactionType;
+use LoyaltyRewards\Domain\Models\LoyaltyAccount;
+use LoyaltyRewards\Domain\Models\PointsTransaction;
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
+use LoyaltyRewards\Domain\ValueObjects\TransactionId;
 
 class Factories
 {
@@ -36,7 +36,7 @@ class Factories
 
     public static function customerId(?string $id = null): CustomerId
     {
-        return CustomerId::fromString($id ?? 'customer_' . uniqid());
+        return CustomerId::fromString($id ?? 'customer_'.uniqid());
     }
 
     public static function accountId(): AccountId
@@ -67,7 +67,7 @@ class Factories
             $pendingPoints ?? Points::zero(),
             Points::zero(),
             $status,
-            new DateTimeImmutable()
+            new DateTimeImmutable
         );
     }
 

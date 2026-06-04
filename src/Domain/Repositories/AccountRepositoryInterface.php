@@ -7,7 +7,8 @@ namespace LoyaltyRewards\Domain\Repositories;
 use DateTimeImmutable;
 use LoyaltyRewards\Core\Exceptions\AccountNotFoundException;
 use LoyaltyRewards\Domain\Models\LoyaltyAccount;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, CustomerId};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\CustomerId;
 
 interface AccountRepositoryInterface
 {
@@ -22,7 +23,8 @@ interface AccountRepositoryInterface
     public function findByCustomerId(CustomerId $customerId): LoyaltyAccount;
 
     /**
-     * @return LoyaltyAccount[]
+     * @param  list<CustomerId>  $customerIds
+     * @return list<LoyaltyAccount>
      */
     public function findByCustomerIds(array $customerIds): array;
 
@@ -31,12 +33,12 @@ interface AccountRepositoryInterface
     public function delete(AccountId $id): void;
 
     /**
-     * @return LoyaltyAccount[]
+     * @return list<LoyaltyAccount>
      */
     public function findInactive(DateTimeImmutable $since): array;
 
     /**
-     * @return LoyaltyAccount[]
+     * @return list<LoyaltyAccount>
      */
     public function findWithPendingPoints(): array;
 

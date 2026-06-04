@@ -2,13 +2,15 @@
 
 use LoyaltyRewards\Core\Services\FraudDetection\FraudResult;
 use LoyaltyRewards\Core\Services\FraudDetectionService;
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\Currency;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 use LoyaltyRewards\Tests\Support\Factories;
 use Psr\Log\NullLogger;
 
 describe('FraudDetectionService', function () {
     beforeEach(function () {
-        $this->service = new FraudDetectionService(new NullLogger());
+        $this->service = new FraudDetectionService(new NullLogger);
         $this->account = Factories::loyaltyAccount();
     });
 
@@ -24,7 +26,7 @@ describe('FraudDetectionService', function () {
         expect($result)->toBeInstanceOf(FraudResult::class);
         expect($result->getScore())->toBeGreaterThanOrEqual(0.0);
         $level = $result->getRiskLevel();
-        expect(in_array($level, ['negligible','low'], true))->toBeTrue();
+        expect(in_array($level, ['negligible', 'low'], true))->toBeTrue();
         expect($result->shouldBlock())->toBeFalse();
     });
 

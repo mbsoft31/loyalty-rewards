@@ -37,6 +37,7 @@ final readonly class Money implements JsonSerializable
     {
         $cleanAmount = preg_replace('/[^\d.]/', '', $amount);
         $dollars = (float) $cleanAmount;
+
         return self::fromDollars($dollars, $currency);
     }
 
@@ -58,6 +59,7 @@ final readonly class Money implements JsonSerializable
     public function add(Money $other): self
     {
         $this->assertSameCurrency($other);
+
         return new self($this->amount + $other->amount, $this->currency);
     }
 
@@ -113,12 +115,14 @@ final readonly class Money implements JsonSerializable
     public function isGreaterThan(Money $other): bool
     {
         $this->assertSameCurrency($other);
+
         return $this->amount > $other->amount;
     }
 
     public function isLessThan(Money $other): bool
     {
         $this->assertSameCurrency($other);
+
         return $this->amount < $other->amount;
     }
 
@@ -129,13 +133,21 @@ final readonly class Money implements JsonSerializable
 
     private function assertSameCurrency(Money $other): void
     {
-        if (!$this->currency->equals($other->currency)) {
+        if (! $this->currency->equals($other->currency)) {
             throw new InvalidArgumentException(
                 "Cannot operate on different currencies: {$this->currency} vs {$other->currency}"
             );
         }
     }
 
+    /**
+     * @return array{
+     *     amount_cents: int,
+     *     amount_dollars: float,
+     *     currency: string,
+     *     formatted: string
+     * }
+     */
     public function jsonSerialize(): array
     {
         return [
@@ -154,6 +166,7 @@ final readonly class Money implements JsonSerializable
     public function isGreaterThanOrEqual(Money $minimumAmount): bool
     {
         $this->assertSameCurrency($minimumAmount);
+
         return $this->amount >= $minimumAmount->amount;
     }
 }

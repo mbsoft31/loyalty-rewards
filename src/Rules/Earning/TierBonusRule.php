@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace LoyaltyRewards\Rules\Earning;
 
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 
 class TierBonusRule extends BaseEarningRule
 {
@@ -24,6 +27,7 @@ class TierBonusRule extends BaseEarningRule
     public function calculatePoints(Money $amount, TransactionContext $context): Points
     {
         $basePoints = $amount->convertToPoints($this->baseRate);
+
         return $basePoints->multiply($this->bonusMultiplier);
     }
 

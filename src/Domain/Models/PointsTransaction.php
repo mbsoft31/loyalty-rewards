@@ -7,7 +7,10 @@ namespace LoyaltyRewards\Domain\Models;
 use DateTimeImmutable;
 use JsonSerializable;
 use LoyaltyRewards\Domain\Enums\TransactionType;
-use LoyaltyRewards\Domain\ValueObjects\{AccountId, Points, TransactionContext, TransactionId};
+use LoyaltyRewards\Domain\ValueObjects\AccountId;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
+use LoyaltyRewards\Domain\ValueObjects\TransactionId;
 
 final readonly class PointsTransaction implements JsonSerializable
 {
@@ -19,8 +22,7 @@ final readonly class PointsTransaction implements JsonSerializable
         private TransactionContext $context,
         private DateTimeImmutable $createdAt,
         private ?DateTimeImmutable $processedAt = null
-    ) {
-    }
+    ) {}
 
     public static function create(
         AccountId $accountId,
@@ -34,7 +36,7 @@ final readonly class PointsTransaction implements JsonSerializable
             $type,
             $points,
             $context,
-            new DateTimeImmutable()
+            new DateTimeImmutable
         );
     }
 
@@ -91,7 +93,7 @@ final readonly class PointsTransaction implements JsonSerializable
             $this->points,
             $this->context,
             $this->createdAt,
-            new DateTimeImmutable()
+            new DateTimeImmutable
         );
     }
 
@@ -105,6 +107,17 @@ final readonly class PointsTransaction implements JsonSerializable
         return $this->type->isSpending();
     }
 
+    /**
+     * @return array{
+     *     id: string,
+     *     account_id: string,
+     *     type: string,
+     *     points: int,
+     *     context: array<string, mixed>,
+     *     created_at: string,
+     *     processed_at: string|null
+     * }
+     */
     public function jsonSerialize(): array
     {
         return [

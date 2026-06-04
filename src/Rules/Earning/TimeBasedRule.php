@@ -5,10 +5,16 @@ declare(strict_types=1);
 namespace LoyaltyRewards\Rules\Earning;
 
 use DateTimeImmutable;
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Money, Points, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
+use LoyaltyRewards\Domain\ValueObjects\Money;
+use LoyaltyRewards\Domain\ValueObjects\Points;
+use LoyaltyRewards\Domain\ValueObjects\TransactionContext;
 
 class TimeBasedRule extends BaseEarningRule
 {
+    /**
+     * @param  list<string>  $daysOfWeek
+     */
     public function __construct(
         private readonly DateTimeImmutable $startTime,
         private readonly DateTimeImmutable $endTime,
@@ -30,6 +36,7 @@ class TimeBasedRule extends BaseEarningRule
     public function calculatePoints(Money $amount, TransactionContext $context): Points
     {
         $basePoints = $amount->convertToPoints($this->baseRate);
+
         return $basePoints->multiply($this->multiplier);
     }
 
@@ -43,8 +50,9 @@ class TimeBasedRule extends BaseEarningRule
         }
 
         // Check day of week if specified
-        if (!empty($this->daysOfWeek)) {
+        if (! empty($this->daysOfWeek)) {
             $dayOfWeek = strtolower($timestamp->format('l'));
+
             return in_array($dayOfWeek, $this->daysOfWeek);
         }
 

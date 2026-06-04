@@ -6,19 +6,17 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": "^8.2",
-        "psr/log": "^3.0",
+        "php": "^8.3",
+        "ext-pdo": "*",
         "psr/event-dispatcher": "^1.0",
-        "ramsey/uuid": "^4.7",
-        "ext-pdo": "*"
+        "psr/log": "^3.0",
+        "ramsey/uuid": "^4.7"
     },
     "require-dev": {
-        "pestphp/pest": "^2.0",
+        "laravel/pint": "^1.25",
         "mockery/mockery": "^1.6",
-        "phpunit/phpunit": "^10.0",
-        "symfony/var-dumper": "^6.0",
-        "phpstan/phpstan": "^1.11",
-        "friendsofphp/php-cs-fixer": "^3.64"
+        "pestphp/pest": "^4.7",
+        "phpstan/phpstan": "^2.2"
     },
     "autoload": {
         "psr-4": {
@@ -31,17 +29,25 @@
         }
     },
     "scripts": {
+        "ci": [
+            "composer validate --strict",
+            "@lint",
+            "@stan",
+            "@test",
+            "composer audit --format=plain"
+        ],
         "test": "pest",
         "test:unit": "pest tests/Unit",
-        "test:feature": "pest tests/Feature", 
+        "test:feature": "pest tests/Feature",
         "test:verbose": "pest --verbose",
         "test:coverage": "pest --coverage-html coverage",
         "test:clover": "pest --coverage-clover coverage.xml",
         "test:integration": "pest tests/Integration",
+        "test:parallel": "pest --parallel",
         "test:filter": "pest --filter",
         "stan": "phpstan analyse --memory-limit=512M",
-        "lint": "php-cs-fixer fix --dry-run --diff",
-        "lint:fix": "php-cs-fixer fix"
+        "lint": "pint --test",
+        "lint:fix": "pint"
     },
     "config": {
         "optimize-autoloader": true,
