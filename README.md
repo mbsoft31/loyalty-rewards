@@ -1,24 +1,24 @@
-# 🎯 Loyalty Rewards System
+# Loyalty Rewards System
 
 [![Tests](https://github.com/mbsoft31/loyalty-rewards/actions/workflows/tests.yml/badge.svg)](https://github.com/mbsoft31/loyalty-rewards/actions/workflows/tests.yml)
 [![PHP Version](https://img.shields.io/badge/php-%5E8.3-blue)](https://php.net)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Latest Version](https://img.shields.io/github/v/release/mbsoft31/loyalty-rewards)](https://github.com/mbsoft31/loyalty-rewards/releases)
-[![Laravel Adapter](https://img.shields.io/badge/Laravel-Adapter-blueviolet)](packages/loyalty-rewards-laravel)
+[![Laravel Adapter](https://img.shields.io/badge/Laravel-Adapter-blueviolet)](https://github.com/mbsoft31/loyalty-laravel-pro)
 
 A comprehensive, enterprise-grade loyalty rewards system for PHP applications. Built with Domain-Driven Design principles, this package provides flexible point earning/redemption, fraud detection, audit logging, and multi-tier reward programs.
 
-## ✨ Features
+## Features
 
-- 🎁 Flexible Rewards Engine — Category multipliers, tier bonuses, time-based promotions
-- 🛡️ Built-in Fraud Detection — Velocity checks, amount validation, suspicious activity alerts
-- 📊 Complete Audit Trail — Full transaction logging with compliance support
-- ⚡ High Performance — Handles 1000+ transactions/second with optimized database queries
-- 🧪 Comprehensive Test Suite — Unit, feature, integration, and coverage-gated CI checks
-- 🔧 Framework Agnostic — Works with Laravel, Symfony, or standalone PHP applications
-- 💎 Type Safe — Full PHP 8.3+ type declarations with strict type checking
+- Flexible Rewards Engine — Category multipliers, tier bonuses, time-based promotions
+- Built-in Fraud Detection — Velocity checks, amount validation, suspicious activity alerts
+- Complete Audit Trail — Full transaction logging with compliance support
+- High Performance — Handles 1000+ transactions/second with optimized database queries
+- Comprehensive Test Suite — Unit, feature, integration, and coverage-gated CI checks
+- Framework Agnostic — Works with Laravel, Symfony, or standalone PHP applications
+- Type Safe — Full PHP 8.3+ type declarations with strict type checking
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -45,11 +45,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\NullLogger;
 
 $pdo = DatabaseConnectionFactory::create([
-    'driver' => 'mysql',
-    'host' => 'localhost',
-    'database' => 'loyalty_rewards',
-    'username' => 'your_user',
-    'password' => 'your_password',
+    'driver' => 'sqlite',
+    'database' => ':memory:',
 ]);
 
 $accountRepository = new DatabaseAccountRepository(
@@ -79,7 +76,7 @@ $loyaltyService = new LoyaltyService(
 
 // Create customer account
 $customerId = CustomerId::fromString('customer_12345');
-$account = $loyaltyService->createAccount($customerId);
+$loyaltyService->createAccount($customerId);
 
 // Earn points from purchase
 $result = $loyaltyService->earnPoints(
@@ -100,11 +97,11 @@ $redemption = $loyaltyService->redeemPoints(
     TransactionContext::redemption(['channel' => 'store'])
 );
 
-echo "Redeemed: {$redemption->redemptionValue} value";
+echo "Redeemed: {$redemption->redemptionValue->toDollars()} {$redemption->redemptionValue->currency()->code()}";
 
 ```
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 loyalty-rewards/
@@ -126,13 +123,16 @@ loyalty-rewards/
 └── tests/                    # Comprehensive test suite
 ```
 
-## 💡 Real-World Examples
+## Real-World Examples
 
 ### E-commerce Rewards Program
 
 ```php
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, CustomerId, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\{CategoryMultiplierRule, TierBonusRule};
+
+$goldCustomerId = CustomerId::fromString('customer_gold_100');
+$loyaltyService->createAccount($goldCustomerId);
 
 // Setup category-based earning
 $rulesEngine->addEarningRule(new CategoryMultiplierRule('electronics', 3.0, ConversionRate::standard()));
@@ -147,7 +147,7 @@ $rulesEngine->addEarningRule(new TierBonusRule('platinum', 1.5, ConversionRate::
 $result = $loyaltyService->earnPoints(
     $goldCustomerId,
     Money::fromDollars(200.00, Currency::USD()),
-    TransactionContext::earning('electronics')
+    TransactionContext::earning('electronics', null, ['tier' => 'gold'])
 );
 // Earns: 200 * 100 * 3.0 * 1.25 = 75,000 points
 ```
@@ -156,8 +156,11 @@ $result = $loyaltyService->earnPoints(
 
 ```php
 use DateTimeImmutable;
-use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\{ConversionRate, Currency, CustomerId, Money, TransactionContext};
 use LoyaltyRewards\Rules\Earning\TimeBasedRule;
+
+$customerId = CustomerId::fromString('customer_restaurant_100');
+$loyaltyService->createAccount($customerId);
 
 // Happy hour promotions
 $happyHourRule = new TimeBasedRule(
@@ -182,7 +185,10 @@ $result = $loyaltyService->earnPoints(
 ### SaaS Referral Program
 
 ```php
-use LoyaltyRewards\Domain\ValueObjects\{Currency, Money, TransactionContext};
+use LoyaltyRewards\Domain\ValueObjects\{Currency, CustomerId, Money, TransactionContext};
+
+$referrerId = CustomerId::fromString('customer_referrer_200');
+$loyaltyService->createAccount($referrerId);
 
 // Referral bonus
 $result = $loyaltyService->earnPoints(
@@ -197,7 +203,7 @@ $result = $loyaltyService->earnPoints(
 ```
 
 
-## 🔧 Configuration
+## Configuration
 
 ### Database Setup
 
@@ -205,11 +211,8 @@ $result = $loyaltyService->earnPoints(
 use LoyaltyRewards\Infrastructure\Database\DatabaseConnectionFactory;
 
 $pdo = DatabaseConnectionFactory::create([
-    'driver' => 'pgsql',
-    'host' => 'localhost',
-    'database' => 'loyalty_rewards',
-    'username' => 'your_user',
-    'password' => 'your_password',
+    'driver' => 'sqlite',
+    'database' => '/absolute/path/to/loyalty.sqlite',
 ]);
 ```
 ### Dependency Injection
@@ -227,11 +230,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\NullLogger;
 
 $pdo = DatabaseConnectionFactory::create([
-    'driver' => 'pgsql',
-    'host' => 'localhost',
-    'database' => 'loyalty_rewards',
-    'username' => 'your_user',
-    'password' => 'your_password',
+    'driver' => 'sqlite',
+    'database' => ':memory:',
 ]);
 
 $accountRepository = new DatabaseAccountRepository(
@@ -281,7 +281,7 @@ $rulesEngine->addEarningRule(
 );
 ```
 
-## 🧪 Testing
+## Testing
 
 The package includes comprehensive tests with a CI coverage gate:
 
@@ -305,26 +305,26 @@ composer test:integration
 composer test:coverage
 ```
 
-# Performance benchmarks
-
-```bash
-./vendor/bin/pest tests/Integration/Performance/
-```
-
 ### Test Results
 - Full suite includes unit, feature, and integration tests
 - Unit tests: Value objects, domain models, rules engine
 - Integration tests: Database operations, repository behavior, full service workflows
-- Performance tests: High-volume transactions, memory efficiency
+- Integration coverage includes high-volume transaction workflows
 
-## 🔒 Security & Fraud Detection
+## Security & Fraud Detection
 
 Built-in fraud detection with configurable rules:
 
 ```php
+use LoyaltyRewards\Core\Exceptions\FraudDetectedException;
 use LoyaltyRewards\Core\Services\FraudDetectionService;
+use LoyaltyRewards\Domain\ValueObjects\{Currency, CustomerId, Money, TransactionContext};
 
 $fraudDetection = new FraudDetectionService();
+$customerId = CustomerId::fromString('customer_12345');
+$account = $accountRepository->findByCustomerId($customerId);
+$amount = Money::fromDollars(99.99, Currency::USD());
+$context = TransactionContext::earning('electronics', 'online_store');
 
 // Automatic fraud checking on all transactions
 $fraudResult = $fraudDetection->analyze($account, $amount, $context);
@@ -340,7 +340,7 @@ Detection Methods:
 - Pattern recognition
 - Account behavior analysis
 
-## 📈 Performance
+## Performance
 
 Benchmarked Performance:
 - Single Transaction: < 100ms average
@@ -354,7 +354,7 @@ Scalability Features:
 - Async queue processing
 - Horizontal scaling ready
 
-## 🏢 Enterprise Features
+## Enterprise Features
 
 ### Audit & Compliance
 - Complete transaction audit trails
@@ -374,15 +374,15 @@ Scalability Features:
 - Webhook support ready
 - Real-time notifications
 
-## 📚 Documentation
+## Documentation
 
 - [API Reference (API.md)](API.md) — Complete method documentation
 - [Architecture Guide (ARCHITECTURE.md)](ARCHITECTURE.md) — Technical design decisions
 - [Examples (EXAMPLES.md)](EXAMPLES.md) — 10+ real-world implementations
 - [Configuration (CONFIGURATION.md)](CONFIGURATION.md) — Setup and customization options
-- [Laravel Adapter](packages/loyalty-rewards-laravel) — Service provider, config, and migrations
+- [Laravel Adapter](https://github.com/mbsoft31/loyalty-laravel-pro) — Service provider, config, and migrations
  
-## 🚢 Release Guide
+## Release Guide
 
 To cut a release:
 
@@ -393,12 +393,12 @@ git push origin v0.1.0
 
 # (optional) update Packagist after pushing tags
 # core:     https://packagist.org/packages/mbsoft31/loyalty-rewards
-# adapter:  https://packagist.org/packages/mbsoft31/loyalty-rewards-laravel
+# adapter:  https://packagist.org/packages/mbsoft31/loyalty-laravel-pro
 ```
 
 CI runs unit + integration tests on PHP 8.3, 8.4, and 8.5. Coverage gate enforces ≥80% on PHP 8.3.
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see CONTRIBUTING.md for guidelines.
 
@@ -411,15 +411,15 @@ composer install
 composer test
 ```
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License — see the LICENSE file for details.
 
-## 🔗 Links
+## Links
 
 - GitHub Repository: https://github.com/mbsoft31/loyalty-rewards
 - Issues: https://github.com/mbsoft31/loyalty-rewards/issues
 - Discussions: https://github.com/mbsoft31/loyalty-rewards/discussions
 - Releases: https://github.com/mbsoft31/loyalty-rewards/releases
 
-Built with ❤️ by mbsoft31 — Empowering businesses with flexible, scalable loyalty solutions.
+Built by mbsoft31 — Empowering businesses with flexible, scalable loyalty solutions.
