@@ -59,5 +59,5 @@ Move the pure plan-policy behavior used by Laravel Pro into the framework-agnost
 ## Notes and Risks
 
 - `loyalty-rewards/.phpunit.cache/test-results` remains a generated local test artifact and was not treated as source.
-- Laravel Pro validation used this local core checkout during adapter refactor verification.
-- Release coordination should tag this core surface as `v1.2.0` before Laravel Pro permanently requires `mbsoft31/loyalty-rewards:^1.2`.
+- Laravel Pro validation initially used this local core checkout during adapter refactor verification.
+- Release coordination completed by tagging this core surface as `v1.2.0`.
