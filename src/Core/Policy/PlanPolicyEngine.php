@@ -8,6 +8,11 @@ use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use LoyaltyRewards\Core\Engine\RulesEngine;
+use LoyaltyRewards\Core\Policy\Results\BadgeItemResult;
+use LoyaltyRewards\Core\Policy\Results\MissionItemResult;
+use LoyaltyRewards\Core\Policy\Results\ReferralStatsResult;
+use LoyaltyRewards\Core\Policy\Results\RewardEligibilityResult;
+use LoyaltyRewards\Core\Policy\Results\TierProgressResult;
 use LoyaltyRewards\Domain\ValueObjects\ConversionRate;
 use LoyaltyRewards\Domain\ValueObjects\Currency;
 use LoyaltyRewards\Domain\ValueObjects\Money;
@@ -191,8 +196,8 @@ final readonly class PlanPolicyEngine
             return false;
         }
 
-        $progress = $this->tierProgress($lifetimePoints, $planKey);
-        if ($progress === null || ! is_string($progress['current_tier'] ?? null)) {
+        $progress = $this->tierProgressResult($lifetimePoints, $planKey);
+        if ($progress === null) {
             return false;
         }
 
@@ -201,7 +206,7 @@ final readonly class PlanPolicyEngine
             $rank[(string) $tier['key']] = $index;
         }
 
-        $currentTier = (string) $progress['current_tier'];
+        $currentTier = $progress->currentTier;
 
         return array_key_exists($requiredTier, $rank)
             && array_key_exists($currentTier, $rank)
@@ -212,6 +217,11 @@ final readonly class PlanPolicyEngine
      * @return array<string, mixed>|null
      */
     public function tierProgress(int $lifetimePoints, ?string $planKey = null): ?array
+    {
+        return $this->tierProgressResult($lifetimePoints, $planKey)?->toArray();
+    }
+
+    public function tierProgressResult(int $lifetimePoints, ?string $planKey = null): ?TierProgressResult
     {
         $tiers = $this->normalizedTiers($this->tiers($planKey));
         if ($tiers === []) {
@@ -238,19 +248,19 @@ final readonly class PlanPolicyEngine
             ? 100.0
             : (($lifetimePoints - $currentThreshold) / max(1, $nextThreshold - $currentThreshold)) * 100;
 
-        return [
-            'current_tier' => (string) $currentTier['key'],
-            'current_tier_label' => $this->humanizeTierLabel((string) $currentTier['key']),
-            'next_tier' => $nextTier !== null ? (string) $nextTier['key'] : null,
-            'next_tier_label' => $nextTier !== null ? $this->humanizeTierLabel((string) $nextTier['key']) : null,
-            'current_value' => $lifetimePoints,
-            'target_value' => $nextThreshold,
-            'points_to_next' => $pointsToNext,
-            'progress_percent' => (float) round(max(0.0, min(100.0, $progressPercent)), 2),
-            'benefits' => $this->formatTierBenefits((array) $currentTier['benefits']),
-            'period' => null,
-            'forecast_points_to_next_30d' => 0,
-        ];
+        return new TierProgressResult(
+            currentTier: (string) $currentTier['key'],
+            currentTierLabel: $this->humanizeTierLabel((string) $currentTier['key']),
+            nextTier: $nextTier !== null ? (string) $nextTier['key'] : null,
+            nextTierLabel: $nextTier !== null ? $this->humanizeTierLabel((string) $nextTier['key']) : null,
+            currentValue: $lifetimePoints,
+            targetValue: $nextThreshold,
+            pointsToNext: $pointsToNext,
+            progressPercent: (float) round(max(0.0, min(100.0, $progressPercent)), 2),
+            benefits: $this->formatTierBenefits((array) $currentTier['benefits']),
+            period: null,
+            forecastPointsToNext30d: 0,
+        );
     }
 
     /**
@@ -260,34 +270,38 @@ final readonly class PlanPolicyEngine
     public function rewardPayload(array $reward, CustomerLoyaltyState $state, ?string $planKey = null): array
     {
         $planKey ??= $state->plan;
+
+        return $this->rewardEligibility($reward, $state, $planKey)
+            ->toPayload($reward, $this->catalog->get($planKey)->currency());
+    }
+
+    /**
+     * @param  array<string, mixed>  $reward
+     */
+    public function rewardEligibility(array $reward, CustomerLoyaltyState $state, ?string $planKey = null): RewardEligibilityResult
+    {
+        $planKey ??= $state->plan;
         $eligibility = (array) ($reward['eligibility'] ?? []);
         $inventory = (array) ($reward['inventory'] ?? []);
         $requiredTier = (string) ($eligibility['required_tier'] ?? '');
         $minimumPoints = (int) ($eligibility['min_points'] ?? 0);
+        $isAvailable = (bool) ($reward['is_available_default'] ?? true)
+            && $state->lifetimePoints >= $minimumPoints
+            && $this->meetsTierRequirement($state->lifetimePoints, $requiredTier, $planKey);
+        $inventoryState = (string) ($inventory['state'] ?? 'unavailable');
+        $remaining = $inventory['remaining'] ?? null;
+        $inventoryAllowsRedemption = ! in_array($inventoryState, ['sold_out', 'unavailable'], true)
+            && ($remaining === null || (int) $remaining >= 1);
 
-        return [
-            'id' => (string) ($reward['id'] ?? ''),
-            'key' => (string) ($reward['key'] ?? ''),
-            'title' => (string) ($reward['title'] ?? ''),
-            'description' => (string) ($reward['description'] ?? ''),
-            'cost_points' => (int) ($reward['cost_points'] ?? 0),
-            'currency' => $this->catalog->get($planKey)->currency(),
-            'category' => (string) ($reward['category'] ?? 'general'),
-            'estimated_value_cents' => (int) ($reward['estimated_value_cents'] ?? 0),
-            'is_available' => (bool) ($reward['is_available_default'] ?? true)
-                && $state->lifetimePoints >= $minimumPoints
-                && $this->meetsTierRequirement($state->lifetimePoints, $requiredTier, $planKey),
-            'eligibility' => [
-                'required_tier' => (string) ($eligibility['required_tier'] ?? ''),
-                'min_points' => $minimumPoints,
-                'max_per_customer' => $eligibility['max_per_customer'] ?? null,
-            ],
-            'inventory' => [
-                'state' => (string) ($inventory['state'] ?? 'unavailable'),
-                'remaining' => $inventory['remaining'] ?? null,
-            ],
-            'tags' => (array) ($reward['tags'] ?? []),
-        ];
+        return new RewardEligibilityResult(
+            isAvailable: $isAvailable,
+            isRedeemable: $isAvailable && $inventoryAllowsRedemption,
+            requiredTier: $requiredTier,
+            minimumPoints: $minimumPoints,
+            maxPerCustomer: $eligibility['max_per_customer'] ?? null,
+            inventoryState: $inventoryState,
+            inventoryRemaining: $remaining,
+        );
     }
 
     /**
@@ -295,28 +309,7 @@ final readonly class PlanPolicyEngine
      */
     public function rewardIsRedeemable(array $reward, CustomerLoyaltyState $state, ?string $planKey = null): bool
     {
-        $planKey ??= $state->plan;
-
-        if (! (bool) ($reward['is_available_default'] ?? true)) {
-            return false;
-        }
-
-        $inventory = (array) ($reward['inventory'] ?? []);
-        $stateName = (string) ($inventory['state'] ?? 'unavailable');
-        if (in_array($stateName, ['sold_out', 'unavailable'], true)) {
-            return false;
-        }
-
-        if (($inventory['remaining'] ?? null) !== null && (int) $inventory['remaining'] < 1) {
-            return false;
-        }
-
-        $eligibility = (array) ($reward['eligibility'] ?? []);
-        $minimumPoints = (int) ($eligibility['min_points'] ?? 0);
-        $requiredTier = (string) ($eligibility['required_tier'] ?? '');
-
-        return $state->lifetimePoints >= $minimumPoints
-            && $this->meetsTierRequirement($state->lifetimePoints, $requiredTier, $planKey);
+        return $this->rewardEligibility($reward, $state, $planKey)->isRedeemable;
     }
 
     /**
@@ -356,13 +349,14 @@ final readonly class PlanPolicyEngine
         ];
 
         foreach ($missions as $mission) {
-            $item = $this->missionItem($mission, $accountMissionProgress, $now);
+            $result = $this->missionItemResult($mission, $accountMissionProgress, $now);
+            $item = $result->toArray();
 
-            if (array_key_exists($item['status'], $summary)) {
-                $summary[$item['status']]++;
+            if (array_key_exists($result->status, $summary)) {
+                $summary[$result->status]++;
             }
 
-            if ($requestedStatus !== '' && $item['status'] !== $requestedStatus) {
+            if ($requestedStatus !== '' && $result->status !== $requestedStatus) {
                 continue;
             }
 
@@ -382,6 +376,15 @@ final readonly class PlanPolicyEngine
      */
     public function missionItem(array $mission, array $accountMissionProgress, ?DateTimeImmutable $now = null): array
     {
+        return $this->missionItemResult($mission, $accountMissionProgress, $now)->toArray();
+    }
+
+    /**
+     * @param  array<string, mixed>  $mission
+     * @param  array<string, mixed>  $accountMissionProgress
+     */
+    public function missionItemResult(array $mission, array $accountMissionProgress, ?DateTimeImmutable $now = null): MissionItemResult
+    {
         $key = (string) ($mission['key'] ?? '');
         $progress = (array) ($accountMissionProgress[$key] ?? []);
         $target = max(1, (int) ($mission['target'] ?? 1));
@@ -389,19 +392,19 @@ final readonly class PlanPolicyEngine
         $expiresAt = $this->missionExpiresAt($mission, $now);
         $status = $this->missionStatus($current, $target, $expiresAt, $now);
 
-        return [
-            'id' => (string) ($mission['id'] ?? ''),
-            'key' => $key,
-            'title' => (string) ($mission['title'] ?? ''),
-            'description' => (string) ($mission['description'] ?? ''),
-            'status' => $status,
-            'current' => $current,
-            'target' => $target,
-            'progress_percent' => (float) min(100.0, round(($current / $target) * 100, 2)),
-            'reward_points' => (int) ($mission['reward_points'] ?? 0),
-            'expires_at' => $expiresAt,
-            'next_reward_eligible_at' => null,
-        ];
+        return new MissionItemResult(
+            id: (string) ($mission['id'] ?? ''),
+            key: $key,
+            title: (string) ($mission['title'] ?? ''),
+            description: (string) ($mission['description'] ?? ''),
+            status: $status,
+            current: $current,
+            target: $target,
+            progressPercent: (float) min(100.0, round(($current / $target) * 100, 2)),
+            rewardPoints: (int) ($mission['reward_points'] ?? 0),
+            expiresAt: $expiresAt,
+            nextRewardEligibleAt: null,
+        );
     }
 
     /**
@@ -409,6 +412,14 @@ final readonly class PlanPolicyEngine
      * @return array<string, mixed>
      */
     public function badgeItem(array $badge, CustomerLoyaltyState $state, string $plan): array
+    {
+        return $this->badgeItemResult($badge, $state, $plan)->toArray();
+    }
+
+    /**
+     * @param  array<string, mixed>  $badge
+     */
+    public function badgeItemResult(array $badge, CustomerLoyaltyState $state, string $plan): BadgeItemResult
     {
         $requirement = $this->badgeRequirement($badge);
         $target = (int) ($requirement['target'] ?? 0);
@@ -424,25 +435,25 @@ final readonly class PlanPolicyEngine
         $earnedMessage = (string) ($meta['earned_message'] ?? '');
         $requirementText = (string) ($requirement['label'] ?? '');
 
-        return [
-            'id' => (string) ($badge['id'] ?? ''),
-            'badge_key' => $badgeKey,
-            'label' => (string) ($badge['label'] ?? ''),
-            'description' => (string) ($badge['description'] ?? ''),
-            'icon_key' => (string) ($badge['icon_key'] ?? ''),
-            'rarity' => (string) ($badge['rarity'] ?? 'common'),
-            'state' => $stateName,
-            'earned_at' => $earnedAt !== '' ? $earnedAt : null,
-            'progress' => $progress,
-            'target' => $target,
-            'category' => (string) ($badge['category'] ?? ''),
-            'reward_key' => $badge['reward_key'] ?? null,
-            'requirement' => (array) ($badge['requirement'] ?? []),
-            'plan' => $plan,
-            'meta' => [
+        return new BadgeItemResult(
+            id: (string) ($badge['id'] ?? ''),
+            badgeKey: $badgeKey,
+            label: (string) ($badge['label'] ?? ''),
+            description: (string) ($badge['description'] ?? ''),
+            iconKey: (string) ($badge['icon_key'] ?? ''),
+            rarity: (string) ($badge['rarity'] ?? 'common'),
+            state: $stateName,
+            earnedAt: $earnedAt !== '' ? $earnedAt : null,
+            progress: $progress,
+            target: $target,
+            category: (string) ($badge['category'] ?? ''),
+            rewardKey: $badge['reward_key'] ?? null,
+            requirement: (array) ($badge['requirement'] ?? []),
+            plan: $plan,
+            meta: [
                 'earned_message' => $requirementText !== '' ? "{$earnedMessage} {$requirementText}" : $earnedMessage,
             ],
-        ];
+        );
     }
 
     public function badgeScope(string $scope): string
@@ -527,6 +538,18 @@ final readonly class PlanPolicyEngine
         int $pendingReferrals,
         array $rewardRule
     ): array {
+        return $this->referralConversionStatsResult($totalReferrals, $convertedReferrals, $pendingReferrals, $rewardRule)->toArray();
+    }
+
+    /**
+     * @param  array<string, mixed>  $rewardRule
+     */
+    public function referralConversionStatsResult(
+        int $totalReferrals,
+        int $convertedReferrals,
+        int $pendingReferrals,
+        array $rewardRule
+    ): ReferralStatsResult {
         $holdUntilPaid = (bool) ($rewardRule['hold_until_paid'] ?? true);
         $inviterPoints = (int) ($rewardRule['inviter_points'] ?? 0);
         $earnedPoints = $convertedReferrals * $inviterPoints;
@@ -537,19 +560,15 @@ final readonly class PlanPolicyEngine
             $pendingPoints = 0;
         }
 
-        return [
-            'status' => [
-                'total_referrals' => $totalReferrals,
-                'converted_referrals' => $convertedReferrals,
-                'pending_referrals' => $pendingReferrals,
-                'next_reward_at' => null,
-            ],
-            'rewards' => [
-                'earned_points' => $earnedPoints,
-                'pending_points' => $pendingPoints,
-                'risk_level' => $this->referralRiskLevel($totalReferrals),
-            ],
-        ];
+        return new ReferralStatsResult(
+            totalReferrals: $totalReferrals,
+            convertedReferrals: $convertedReferrals,
+            pendingReferrals: $pendingReferrals,
+            nextRewardAt: null,
+            earnedPoints: $earnedPoints,
+            pendingPoints: $pendingPoints,
+            riskLevel: $this->referralRiskLevel($totalReferrals),
+        );
     }
 
     /**

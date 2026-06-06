@@ -3,6 +3,11 @@
 use LoyaltyRewards\Core\Policy\CustomerLoyaltyState;
 use LoyaltyRewards\Core\Policy\PlanConfigFactory;
 use LoyaltyRewards\Core\Policy\PlanPolicyEngine;
+use LoyaltyRewards\Core\Policy\Results\BadgeItemResult;
+use LoyaltyRewards\Core\Policy\Results\MissionItemResult;
+use LoyaltyRewards\Core\Policy\Results\ReferralStatsResult;
+use LoyaltyRewards\Core\Policy\Results\RewardEligibilityResult;
+use LoyaltyRewards\Core\Policy\Results\TierProgressResult;
 
 function loyaltyPolicyEngine(array $plans, string $activePlan = 'starter'): PlanPolicyEngine
 {
@@ -136,6 +141,22 @@ describe('PlanPolicyEngine tier and reward policy', function () {
         expect($engine->rewardPayload($reward, $lowTier, 'vip_tiers')['is_available'])->toBeFalse()
             ->and($engine->rewardIsRedeemable($reward, $lowTier, 'vip_tiers'))->toBeFalse();
     });
+
+    it('returns typed tier and reward results without changing legacy payload arrays', function () {
+        $engine = loyaltyPolicyEngine(vipPolicyPlans(), 'vip_tiers');
+        $state = CustomerLoyaltyState::make('cust-1', 'vip_tiers', 70000, 0, 70000);
+        $reward = $engine->reward('free_shipping_vip', 'vip_tiers');
+
+        $tierResult = $engine->tierProgressResult(70000, 'vip_tiers');
+        $rewardEligibility = $engine->rewardEligibility($reward, $state, 'vip_tiers');
+
+        expect($tierResult)->toBeInstanceOf(TierProgressResult::class)
+            ->and($tierResult->toArray())->toBe($engine->tierProgress(70000, 'vip_tiers'))
+            ->and($rewardEligibility)->toBeInstanceOf(RewardEligibilityResult::class)
+            ->and($rewardEligibility->isAvailable)->toBeTrue()
+            ->and($rewardEligibility->isRedeemable)->toBeTrue()
+            ->and($rewardEligibility->toPayload($reward, 'USD'))->toBe($engine->rewardPayload($reward, $state, 'vip_tiers'));
+    });
 });
 
 describe('PlanPolicyEngine mission and badge policy', function () {
@@ -196,6 +217,28 @@ describe('PlanPolicyEngine mission and badge policy', function () {
             ->and($lifetime['earned_at'])->toBe('2026-06-01T00:00:00.000Z')
             ->and($engine->badgeScope('bad-input'))->toBe('all');
     });
+
+    it('returns typed mission and badge results without changing legacy payload arrays', function () {
+        $engine = loyaltyPolicyEngine(vipPolicyPlans());
+        $now = new DateTimeImmutable('2026-06-06T00:00:00+00:00');
+        $mission = ['id' => 'm1', 'key' => 'visit', 'title' => 'Visit', 'description' => 'Visit stores.', 'target' => 3, 'current' => 1, 'reward_points' => 100, 'expires_in_days' => 17];
+        $state = CustomerLoyaltyState::make('cust-1', 'referral_growth', 2000, 300, 10000);
+        $badge = [
+            'id' => 'b1',
+            'badge_key' => 'available',
+            'label' => 'Available',
+            'requirement' => ['source' => 'available_points', 'required_points' => 3000],
+            'meta' => ['earned_message' => 'Unlocked.'],
+        ];
+
+        $missionResult = $engine->missionItemResult($mission, ['visit' => ['current' => 2]], $now);
+        $badgeResult = $engine->badgeItemResult($badge, $state, 'referral_growth');
+
+        expect($missionResult)->toBeInstanceOf(MissionItemResult::class)
+            ->and($missionResult->toArray())->toBe($engine->missionItem($mission, ['visit' => ['current' => 2]], $now))
+            ->and($badgeResult)->toBeInstanceOf(BadgeItemResult::class)
+            ->and($badgeResult->toArray())->toBe($engine->badgeItem($badge, $state, 'referral_growth'));
+    });
 });
 
 describe('PlanPolicyEngine referral policy', function () {
@@ -219,5 +262,18 @@ describe('PlanPolicyEngine referral policy', function () {
             ->and($instantStats['rewards'])->toBe(['earned_points' => 600, 'pending_points' => 0, 'risk_level' => 'low'])
             ->and($engine->referralConversionStatus(['hold_until_paid' => true]))->toBe('pending')
             ->and($engine->referralConversionStatus(['hold_until_paid' => false]))->toBe('converted');
+    });
+
+    it('returns typed referral stats without changing legacy payload arrays', function () {
+        $engine = loyaltyPolicyEngine(vipPolicyPlans(), 'referral_growth');
+        $rewardRule = ['inviter_points' => 100, 'hold_until_paid' => true];
+
+        $stats = $engine->referralConversionStatsResult(6, 2, 4, $rewardRule);
+
+        expect($stats)->toBeInstanceOf(ReferralStatsResult::class)
+            ->and($stats->toArray())->toBe($engine->referralConversionStats(6, 2, 4, $rewardRule))
+            ->and($stats->earnedPoints)->toBe(200)
+            ->and($stats->pendingPoints)->toBe(400)
+            ->and($stats->riskLevel)->toBe('medium');
     });
 });
