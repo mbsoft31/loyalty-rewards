@@ -2,9 +2,19 @@ name: Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMPOSER_NO_INTERACTION: 1
 
 jobs:
   test:
@@ -12,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         php-version: ['8.3', '8.4', '8.5']
 
@@ -28,17 +39,8 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Validate Composer metadata
-        run: composer validate --strict
-
-      - name: Run PHPStan
-        run: composer stan
-
-      - name: Run code style check
-        run: composer lint
-
-      - name: Run tests
-        run: composer test
+      - name: Run package CI gate
+        run: composer ci
 
       - name: Run tests with coverage
         if: matrix.php-version == '8.3'
