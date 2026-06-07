@@ -54,6 +54,16 @@ Business logic coordination and cross-cutting concerns.
 - RulesEngine: Orchestrates multiple earning/redemption rules
 - RewardCalculator: Optimized point calculation algorithms
 
+#### Policy
+- PlanPolicyEngine: Framework-agnostic plan policy for earning, redemption,
+  tiers, rewards, missions, badges, and referrals.
+- PlanConfigFactory / PlanCatalog / PlanDefinition: Normalize adapter config
+  arrays into read-only plan definitions.
+- CustomerLoyaltyState: Plain PHP account state passed into policy methods.
+- Typed policy results: RewardEligibilityResult, TierProgressResult,
+  MissionItemResult, BadgeItemResult, and ReferralStatsResult preserve adapter
+  payload compatibility without coupling core to HTTP resources.
+
 #### Services
 - LoyaltyService: Primary service for business operations
 - FraudDetectionService: Real-time fraud prevention

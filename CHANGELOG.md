@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2026-06-07
+
+Developer-facing documentation release for the core policy engine.
+
+- Added `CORE_POLICY_ENGINE.md` with plan config shape, method map, typed
+  result DTO reference, adapter boundary checklist, validation commands, and
+  release checklist.
+- Linked the policy guide from README and API docs.
+- Updated architecture docs to include the plan-policy layer.
+- No runtime behavior changes.
+
 ## [1.1.0] - 2025-10-08
 
 Initial public release candidate with production‑grade architecture, >80% test coverage, and framework adapter.
@@ -28,3 +39,4 @@ Initial public release candidate with production‑grade architecture, >80% test
   - Campaign‑based redemption rule
 
 [1.1.0]: https://github.com/mbsoft31/loyalty-rewards/releases/tag/v1.1.0
+[1.3.1]: https://github.com/mbsoft31/loyalty-rewards/releases/tag/v1.3.1

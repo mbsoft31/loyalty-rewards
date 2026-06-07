@@ -2,6 +2,12 @@
 
 Complete API documentation for the Loyalty Rewards System.
 
+For the plan-policy API used by package adapters, see
+[`CORE_POLICY_ENGINE.md`](CORE_POLICY_ENGINE.md). That guide documents
+`PlanConfigFactory`, `PlanCatalog`, `CustomerLoyaltyState`, `PlanPolicyEngine`,
+typed policy result DTOs, compatibility array wrappers, and the adapter
+boundary.
+
 ## Getting Started (Minimal Wiring)
 ```php
 use LoyaltyRewards\\Core\\Services\\{LoyaltyService, FraudDetectionService, AuditService};

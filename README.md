@@ -378,6 +378,7 @@ Scalability Features:
 
 - [API Reference (API.md)](API.md) — Complete method documentation
 - [Architecture Guide (ARCHITECTURE.md)](ARCHITECTURE.md) — Technical design decisions
+- [Core Policy Engine Guide (CORE_POLICY_ENGINE.md)](CORE_POLICY_ENGINE.md) — Plan config, typed policy results, adapter boundaries, and release checklist
 - [Examples (EXAMPLES.md)](EXAMPLES.md) — 10+ real-world implementations
 - [Configuration (CONFIGURATION.md)](CONFIGURATION.md) — Setup and customization options
 - [Laravel Adapter](https://github.com/mbsoft31/loyalty-laravel-pro) — Service provider, config, and migrations
@@ -388,8 +389,8 @@ To cut a release:
 
 ```bash
 # bump version via git tag (Composer reads tags)
-git tag -a v0.1.0 -m "v0.1.0"
-git push origin v0.1.0
+git tag -a v1.3.1 -m "v1.3.1"
+git push origin v1.3.1
 
 # (optional) update Packagist after pushing tags
 # core:     https://packagist.org/packages/mbsoft31/loyalty-rewards
